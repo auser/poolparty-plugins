@@ -97,7 +97,7 @@ Copyright (c) 2009 Ari Lerner. See LICENSE for details.
     f << base
     f << "\n= Available extensions\n\n"
     f << avail.map do |h|
-      "#{h[:name]}\n\t#{h[:desc]}"
+      "#{h[:name]}\n#{h[:desc]}"
     end.join("\n")
     f << "\n\n"
     f << footer
