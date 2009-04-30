@@ -11,7 +11,7 @@
 = Available extensions
 
 == dynomite
-	  Installs dynomite
+	  Installs exge dynomite from the git repository
 
 == Copyright
 

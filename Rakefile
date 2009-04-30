@@ -77,9 +77,15 @@ Copyright (c) 2009 Ari Lerner. See LICENSE for details.
   
   extensions = FileList["#{File.dirname(__FILE__)}/lib/extensions/*.rb"]
   avail = extensions.inject([]) do |s,f|
+    desc = begin
+      open(f).read.match(/\=begin\ rdoc\n(.*)\n\=end/)[1]
+    rescue
+      "Installs #{::File.basename(f, ".rb")}"
+    end
+    
     s << {
       :name => ::File.basename(f, ".rb"),
-      :desc => open(f).read.match(/\=begin\ rdoc\n(.*)\n\=end/)[1]
+      :desc => desc
     }
   end
   

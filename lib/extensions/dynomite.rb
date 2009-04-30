@@ -1,5 +1,5 @@
 =begin rdoc
-  Installs dynomite
+  Installs exge dynomite from the git repository
 =end
 module PoolParty
   class Base
