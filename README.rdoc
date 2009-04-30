@@ -1,7 +1,18 @@
 = poolparty-extensions
 
-Description goes here.
+  Extensions to PoolParty!
+
+  Just install and include in your clouds.rb
+
+  clouds.rb
+    require "poolparty"
+    require "poolparty-extensions"
+
+= Available extensions
+
+== dynomite
+	  Installs dynomite
 
 == Copyright
 
-Copyright (c) 2009 Ari Lerner. See LICENSE for details.
+Copyright (c) 2009 Ari Lerner. See LICENSE for details.  

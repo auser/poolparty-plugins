@@ -54,3 +54,42 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
+
+desc "Generate new readme"
+task :readme do
+  base =<<-EOM
+= poolparty-extensions
+
+  Extensions to PoolParty!
+
+  Just install and include in your clouds.rb
+
+  clouds.rb
+    require "poolparty"
+    require "poolparty-extensions"
+  EOM
+  
+  footer =<<-EOF
+== Copyright
+
+Copyright (c) 2009 Ari Lerner. See LICENSE for details.  
+  EOF
+  
+  extensions = FileList["#{File.dirname(__FILE__)}/lib/extensions/*.rb"]
+  avail = extensions.inject([]) do |s,f|
+    s << {
+      :name => ::File.basename(f, ".rb"),
+      :desc => open(f).read.match(/\=begin\ rdoc\n(.*)\n\=end/)[1]
+    }
+  end
+  
+  File.open("README.rdoc", "w") do |f|
+    f << base
+    f << "\n= Available extensions\n\n"
+    f << avail.map do |h|
+      "== #{h[:name]}\n\t#{h[:desc]}"
+    end.join("\n")
+    f << "\n\n"
+    f << footer
+  end
+end
