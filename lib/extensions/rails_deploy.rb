@@ -31,7 +31,7 @@ module PoolParty
           has_directory "#{dir}/#{name}/shared/#{d}", :owner => owner
         end
         
-        has_file "#{dir}/#{name}/shared/config/database.yml" do
+        has_file "#{dir}/#{name}/shared/config/database.yml", :owner => owner do
           content ::File.file?(database_yml) ? open(database_yml).read : database_yml
         end
         
