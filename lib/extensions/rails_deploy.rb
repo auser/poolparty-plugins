@@ -1,7 +1,10 @@
 =begin rdoc
   Deploy a rails application using chef_deploy
   
-  
+  Usage:
+    has_rails_deploy
+      to => "/var/directory"
+      name => "name of repos"      
 =end
 module PoolParty
   class Rails

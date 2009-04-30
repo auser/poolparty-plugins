@@ -10,10 +10,17 @@
 
 = Available extensions
 
-	dynomite
+dynomite
 	  Installs edge dynomite from the git repository
-	rails_deploy
-	Installs rails_deploy
+
+rails_deploy
+	  Deploy a rails application using chef_deploy
+  
+  Usage:
+    has_rails_deploy
+      to => "/var/directory"
+      name => "name of repos"      
+
 
 == Copyright
 

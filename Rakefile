@@ -78,8 +78,12 @@ Copyright (c) 2009 Ari Lerner. See LICENSE for details.
   extensions = FileList["#{File.dirname(__FILE__)}/lib/extensions/*.rb"]
   avail = extensions.inject([]) do |s,f|
     desc = begin
-      open(f).read.match(/\=begin\ rdoc\n(.*)\n\=end/)[1]
-    rescue
+      str = open(f).read#[/\=begin rdoc(\n)*(.)*/].gsub(/\=begin rdoc\n/, '')
+      if str =~ /\A=begin\s+rdoc/i
+        str.sub!(/\A=begin.*\n/, '')
+        str.sub!(/^=end.*/m, '')
+      end
+    rescue Exception => e
       "Installs #{::File.basename(f, ".rb")}"
     end
     
@@ -93,7 +97,7 @@ Copyright (c) 2009 Ari Lerner. See LICENSE for details.
     f << base
     f << "\n= Available extensions\n\n"
     f << avail.map do |h|
-      "\t#{h[:name]}\n\t#{h[:desc]}"
+      "#{h[:name]}\n\t#{h[:desc]}"
     end.join("\n")
     f << "\n\n"
     f << footer
