@@ -5,7 +5,7 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "poolparty-extensions"
-    gem.summary = %Q{TODO}
+    gem.summary = %Q{Extensions on to of poolparty}
     gem.email = "arilerner@mac.com"
     gem.homepage = "http://github.com/auser/poolparty-extensions"
     gem.authors = ["Ari Lerner"]

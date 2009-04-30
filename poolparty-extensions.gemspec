@@ -9,13 +9,13 @@ Gem::Specification.new do |s|
   s.date = %q{2009-04-30}
   s.email = %q{arilerner@mac.com}
   s.extra_rdoc_files = ["README.rdoc", "LICENSE"]
-  s.files = ["README.rdoc", "VERSION.yml", "lib/extensions", "lib/extensions/dynomite.rb", "lib/extensions/rails_deploy.rb", "lib/poolparty_extensions.rb", "test/poolparty_extensions_test.rb", "test/test_helper.rb", "LICENSE"]
+  s.files = ["README.rdoc", "VERSION.yml", "lib/extensions", "lib/extensions/dynomite.rb", "lib/extensions/rails_deploy.rb", "lib/poolparty-extensions.rb", "test/poolparty_extensions_test.rb", "test/test_helper.rb", "LICENSE"]
   s.has_rdoc = true
   s.homepage = %q{http://github.com/auser/poolparty-extensions}
   s.rdoc_options = ["--inline-source", "--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.2}
-  s.summary = %q{TODO}
+  s.summary = %q{Extensions on to of poolparty}
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION

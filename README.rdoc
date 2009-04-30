@@ -19,7 +19,10 @@ rails_deploy
   Usage:
     has_rails_deploy
       to => "/var/directory"
-      name => "name of repos"      
+      name => "name of repos"
+    
+    Sets up the filesystem structure (similar to capistrano deploy) and uses ezra's
+    chef-deploy to deploy the application
 
 
 == Copyright
