@@ -11,9 +11,9 @@
 = Available extensions
 
 	dynomite
-	  Installs exge dynomite from the git repository
+	  Installs edge dynomite from the git repository
 	rails_deploy
-	  Installs exge dynomite from the git repository
+	Installs rails_deploy
 
 == Copyright
 

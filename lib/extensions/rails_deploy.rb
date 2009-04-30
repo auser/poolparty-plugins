@@ -29,6 +29,8 @@ module PoolParty
     plugin :rails_deploy do
       
       def loaded(o={}, &block)
+        raise "You must include the directory to deploy the rails app" unless to?
+        raise "You must include the repo to deploy the rails app" unless repo?
         has_chef_deploy o, &block
         has_rails_deploy_structure o, &block
       end
