@@ -8,12 +8,12 @@
     require "poolparty"
     require "poolparty-extensions"
 
-== Available extensions
+= Available extensions
 
-= dynomite
+== dynomite
   Installs edge dynomite from the git repository
 
-= rails_deploy
+== rails_deploy
   Deploy a rails application using chef_deploy
   
   Usage:
