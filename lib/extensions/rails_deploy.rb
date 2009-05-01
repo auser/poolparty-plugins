@@ -6,7 +6,7 @@
         dir "/var/www"
         repo "git://github.com/auser/paparazzi.git"
         user "www-data"
-        database_yml /path/to/database.yml
+        database_yml /path/to/database.yml # or a string
       end
     
     Sets up the filesystem structure (similar to capistrano deploy) and uses ezra's
@@ -26,15 +26,16 @@ module PoolParty
         raise "You must include the directory to deploy the rails app" unless dir?
         raise "You must include the repo to deploy the rails app" unless repo?
         
+        has_package "git-core"
         has_directory dir
-        has_directory "#{dir}/#{name}"
-        has_directory "#{dir}/#{name}/shared", :owner => owner
+        has_directory release_directory
+        has_directory "#{release_directory}/shared", :owner => owner
         
         %w(config pids log).each do |d|
-          has_directory "#{dir}/#{name}/shared/#{d}", :owner => owner
+          has_directory "#{release_directory}/shared/#{d}", :owner => owner
         end
         
-        has_file "#{dir}/#{name}/shared/config/database.yml", :owner => owner do
+        has_file "#{release_directory}/shared/config/database.yml", :owner => owner do
           content ::File.file?(database_yml) ? open(database_yml).read : database_yml
         end
         
@@ -43,16 +44,12 @@ module PoolParty
         has_chef_recipe "apache2::mod_rails"
         
         dopts = options.choose {|k,v| [:repo, :user].include?(k)}
-        has_chef_deploy dopts.merge(:name => "#{dir}/#{name}")
+        has_chef_deploy dopts.merge(:name => "#{release_directory}")
         
-        if shared?
-          shared.each do |sh|
-            next unless sh.has_key?(:file)
-            to = sh.has_key?(:to) ? sh[:to] : sh[:file]
-            has_symlink "#{dir}/#{name}/current/#{to}", :to => "#{dir}/#{name}/shared/#{sh[:file]}"
-          end
-        end
-        
+      end
+      
+      def release_directory
+        "#{dir}/#{name}"
       end
       
     end
