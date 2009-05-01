@@ -56,7 +56,7 @@ end
 
 desc "Push to github with new gemspec and readme"
 task :gh => [:readme, :gemspec] do
-  %x{git commit -a -m "Added new readme and gemspec for github && git push origin master"}
+  %x{git commit -a -m "Added new readme and gemspec for github" && git push origin master}
 end
 
 desc "Generate new readme"
