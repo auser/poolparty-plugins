@@ -8,7 +8,7 @@
     require "poolparty"
     require "poolparty-extensions"
 
-= Available extensions
+== Available extensions
 
 = dynomite
   Installs edge dynomite from the git repository

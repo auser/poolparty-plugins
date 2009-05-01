@@ -99,7 +99,7 @@ Copyright (c) 2009 Ari Lerner. See LICENSE for details.
   
   File.open("README.rdoc", "w") do |f|
     f << base
-    f << "\n= Available extensions\n\n"
+    f << "\n== Available extensions\n\n"
     f << avail.map do |h|
       "= #{h[:name]}\n#{h[:desc]}"
     end.join("\n")
