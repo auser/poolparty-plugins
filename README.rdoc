@@ -17,9 +17,12 @@ rails_deploy
   Deploy a rails application using chef_deploy
   
   Usage:
-    has_rails_deploy
-      to => "/var/directory"
-      name => "name of repos"
+      has_rails_deploy "app_name" do
+        dir "/var/www"
+        repo "git://github.com/auser/paparazzi.git"
+        user "www-data"
+        database_yml /path/to/database.yml
+      end
     
     Sets up the filesystem structure (similar to capistrano deploy) and uses ezra's
     chef-deploy to deploy the application
