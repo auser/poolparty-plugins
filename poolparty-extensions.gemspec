@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.date = %q{2009-05-02}
   s.email = %q{arilerner@mac.com}
   s.extra_rdoc_files = ["README.rdoc", "LICENSE"]
-  s.files = ["README.rdoc", "VERSION.yml", "lib/extensions", "lib/extensions/dynomite.rb", "lib/extensions/rails_deploy.rb", "lib/poolparty-extensions.rb", "test/extensions", "test/poolparty_extensions_test.rb", "test/test_helper.rb", "LICENSE"]
+  s.files = ["README.rdoc", "VERSION.yml", "lib/extensions", "lib/extensions/dynomite.rb", "lib/extensions/rails_deploy.rb", "lib/poolparty-extensions.rb", "test/extensions", "test/extensions/rails_deploy_test.rb", "test/poolparty_extensions_test.rb", "test/test_helper.rb", "LICENSE"]
   s.has_rdoc = true
   s.homepage = %q{http://github.com/auser/poolparty-extensions}
   s.rdoc_options = ["--inline-source", "--charset=UTF-8"]
