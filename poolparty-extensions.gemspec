@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{poolparty-extensions}
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ari Lerner"]
-  s.date = %q{2009-04-30}
+  s.date = %q{2009-05-02}
   s.email = %q{arilerner@mac.com}
   s.extra_rdoc_files = ["README.rdoc", "LICENSE"]
   s.files = ["README.rdoc", "VERSION.yml", "lib/extensions", "lib/extensions/dynomite.rb", "lib/extensions/rails_deploy.rb", "lib/poolparty-extensions.rb", "test/extensions", "test/poolparty_extensions_test.rb", "test/test_helper.rb", "LICENSE"]
