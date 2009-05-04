@@ -29,25 +29,44 @@ module PoolParty
         has_package "git-core"
         has_directory dir
         has_directory release_directory
-        has_directory "#{release_directory}/shared", :owner => owner
+        has_directory "#{shared_directory}", :owner => owner
         
         %w(config pids log).each do |d|
-          has_directory "#{release_directory}/shared/#{d}", :owner => owner
+          has_directory "#{shared_directory}/#{d}", :owner => owner
         end
         
-        has_file "#{release_directory}/shared/config/database.yml", :owner => owner do
+        has_file "#{shared_directory}/config/database.yml", :owner => owner do
           content ::File.file?(database_yml) ? open(database_yml).read : database_yml
         end
         
         # Should these be here?
         has_chef_recipe "apache2"
         has_chef_recipe "apache2::mod_rails"
-        
+          
         dopts = options.choose {|k,v| [:repo, :user].include?(k)}
         has_chef_deploy dopts.merge(:name => "#{release_directory}")
         
+        if shared?
+          shared.each do |sh|
+            
+            has_directory "#{shared_directory}/#{::File.dirname(sh)}", :owner => owner
+            
+            has_exec "Create rails-deploy-#{name}-#{sh}", 
+              :command => "cp #{current_directory}/#{sh} #{shared_directory}/#{sh} && chown -R #{owner} #{shared_directory}/#{sh}",
+              :if_not => "test -f #{shared_directory}/#{sh}"
+              
+            has_symlink :name => "#{current_directory}/#{sh}", :to => "#{shared_directory}/#{sh}"
+          end
+        end
+        
       end
-      
+      private
+      def current_directory
+        "#{release_directory}/current"
+      end
+      def shared_directory
+        "#{release_directory}/shared"
+      end
       def release_directory
         "#{dir}/#{name}"
       end
