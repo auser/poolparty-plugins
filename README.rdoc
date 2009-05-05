@@ -24,6 +24,12 @@
   Usage:
     enable :lightcloud
 
+== nanite
+  Install erlang, nanite, eventmachine, amqp, python and rabbitmq along with nanite
+  
+  Usage:
+    enable :nanite
+
 == tokyo_tyrant
   Install tokyo tyrant
   
