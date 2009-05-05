@@ -16,6 +16,14 @@
   Usage:
     enable :dynomite
 
+== lightcloud
+  Installs tokyo tyrant, tokyo cabinet and lightcloud. 
+  
+  It creates a basic config.py file that should probably be updated and made "smarter"
+  
+  Usage:
+    enable :lightcloud
+
 == tokyo_tyrant
   Install tokyo tyrant
   
