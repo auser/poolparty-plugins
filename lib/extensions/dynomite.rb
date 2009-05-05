@@ -1,5 +1,8 @@
 =begin rdoc
   Installs edge dynomite from the git repository
+  
+  Usage:
+    enable :dynomite
 =end
 module PoolParty
   class Base
