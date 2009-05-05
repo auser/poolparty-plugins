@@ -10,6 +10,10 @@ module PoolParty
   class Base
     plugin :lightcloud do
       
+      def loaded o={}, &block
+        enable
+        install_gem if o.has_key?(:install_gem)
+      end
       def enable
         enable :tokyo_tyrant
         
@@ -43,6 +47,10 @@ end
       
       def start_lightcloud
         has_exec "python -m manager all start"
+      end
+      
+      def install_gem
+        has_gem_package "mitchellh-lightcloud"
       end
       
     end
