@@ -7,8 +7,8 @@
     enable :lightcloud
 =end
 module PoolParty
-  class Base
-    plugin :lightcloud do
+  module Plugin
+    class LightCloud < Plugin
       
       def loaded o={}, &block
         enable

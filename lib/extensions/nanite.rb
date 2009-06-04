@@ -5,9 +5,8 @@
     enable :nanite
 =end
 module PoolParty
-  class Nanite
-    
-    plugin :nanite do
+  module Plugin
+    class Nanite < Plugin
       
       def loaded(o={}, &block)
         has_package "erlang"

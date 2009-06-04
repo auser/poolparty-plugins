@@ -5,8 +5,8 @@
     enable :dynomite
 =end
 module PoolParty
-  class Base
-    plugin :dynomite do
+  module Plugin
+    class Dynomite < Plugin
       
       def enable
         has_exec "install dynomite" do
