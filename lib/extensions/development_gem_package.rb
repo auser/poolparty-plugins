@@ -13,11 +13,9 @@ developing an internal or forked gem and you want to deploy it to your cloud
                               :git_pull_first => true)  # git pull from before sending to server
 
 =end
-
-  class DevelopmentGem
-      
-    plugin :development_gem_package do
-
+  module Plugin
+    class DevelopmentGem < Plugin
+ 
       dsl_methods :name,            # Name of the gem
                   :from,            # The *local* path to the src of the gem being deployed
                   :conflicts,       # an array of strings specifying gems this conflicts with
