@@ -107,3 +107,7 @@ Copyright (c) 2009 Ari Lerner. See LICENSE for details.
     f << footer
   end
 end
+
+task :gem => [:build] do
+
+end
