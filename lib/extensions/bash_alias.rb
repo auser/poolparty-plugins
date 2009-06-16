@@ -7,7 +7,7 @@ module PoolParty
 
       def before_load(opts={}, &block)
         # TODO, why does "has_" segfault
-        line_in_file :file => "/root/.profile", :line => "alias #{name}='#{value}'"
+        line_in_file :file => "/root/.profile", :line => "alias #{opts[:name]}='#{opts[:value]}'"
       end
     end
   end
