@@ -1,5 +1,4 @@
-module PoolParty
-=begin  rdoc    
+=begin rdoc
 == Development Gem
 
 Deploy a and install a gem developed locally. This is useful when you are
@@ -13,6 +12,8 @@ developing an internal or forked gem and you want to deploy it to your cloud
                               :git_pull_first => true)  # git pull from before sending to server
 
 =end
+
+module PoolParty
   module Plugin
     class DevelopmentGem < Plugin
  

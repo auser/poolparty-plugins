@@ -10,6 +10,21 @@
 
 = Available extensions
 
+== bash_alias
+  Adds a bash alias
+
+== development_gem_package
+  Deploy a and install a gem developed locally. This is useful when you are
+  developing an internal or forked gem and you want to deploy it to your cloud
+
+
+  == Usage
+
+    has_development_gem_package('jetty-rack', 
+                                :from => "~/path/to/my/site", 
+                                :git_pull_first => true)  # git pull from before sending to server
+
+
 == dynomite
   Installs edge dynomite from the git repository
   

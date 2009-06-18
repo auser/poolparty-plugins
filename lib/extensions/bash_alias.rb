@@ -1,3 +1,6 @@
+=begin rdoc
+  Adds a bash alias
+=end
 module PoolParty
   module Plugin
     class BashAlias < Plugin
