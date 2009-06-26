@@ -106,11 +106,13 @@ module PoolParty
       def create_ssh_configs
         ssh_config = ""
         clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n,i| 
-          has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} master#{i} echo", :user => user # verify the host key
+          has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} master#{i} echo || :", :user => user, # verify the host key
+            :only_if => "grep master#{i} /etc/hosts"
         end 
 
         clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n,i| 
-          has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} slave#{i} echo", :user => user # verify the host key
+          has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} slave#{i} echo || :", :user => user, # verify the host key
+            :only_if => "grep slave#{i} /etc/hosts"
         end 
 
         ssh_config << <<EOF

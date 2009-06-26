@@ -61,19 +61,19 @@ export PATH=$HADOOP_HOME/bin:$HIVE_HOME/bin:$PATH
       def create_hdfs_directories
         has_exec "#{hadoop_home}/bin/hadoop fs -mkdir /tmp", 
           :not_if => "#{hadoop_home}/bin/hadoop fs -ls /tmp",
-          :only_if => "test -e #{hadoop_data_dir}/dfs"
+          :only_if => "test -e #{hadoop_data_dir}/dfs && (ps aux | grep org.apache.hadoop.hdfs.server.namenode.NameNode | grep -v grep)"
 
         has_exec "#{hadoop_home}/bin/hadoop fs -mkdir /user/hive/warehouse", 
           :not_if => "#{hadoop_home}/bin/hadoop fs -ls /user/hive/warehouse",
-          :only_if => "test -e #{hadoop_data_dir}/dfs"
+          :only_if => "test -e #{hadoop_data_dir}/dfs && (ps aux | grep org.apache.hadoop.hdfs.server.namenode.NameNode | grep -v grep)"
 
         has_exec "#{hadoop_home}/bin/hadoop fs -chmod g+w /tmp", 
           :not_if => "#{hadoop_home}/bin/hadoop fs -ls /tmp", # todo, check perms
-          :only_if => "test -e #{hadoop_data_dir}/dfs"
+          :only_if => "test -e #{hadoop_data_dir}/dfs && (ps aux | grep org.apache.hadoop.hdfs.server.namenode.NameNode | grep -v grep)"
  
         has_exec "#{hadoop_home}/bin/hadoop fs -chmod g+w /user/hive/warehouse", 
           :not_if => "#{hadoop_home}/bin/hadoop fs -ls /user/hive/warehouse",
-          :only_if => "test -e #{hadoop_data_dir}/dfs"
+          :only_if => "test -e #{hadoop_data_dir}/dfs && (ps aux | grep org.apache.hadoop.hdfs.server.namenode.NameNode | grep -v grep)"
       end
 
       private
