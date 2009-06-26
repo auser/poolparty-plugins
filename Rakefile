@@ -8,7 +8,7 @@ begin
     gem.summary = %Q{Extensions on to of poolparty}
     gem.email = "arilerner@mac.com"
     gem.homepage = "http://github.com/auser/poolparty-extensions"
-    gem.authors = ["Ari Lerner"]
+    gem.authors = ["Ari Lerner, Nate Murray, & Michael Fairchild"]
 
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
@@ -76,7 +76,7 @@ task :readme do
   footer =<<-EOF
 == Copyright
 
-Copyright (c) 2009 Ari Lerner. See LICENSE for details.  
+Copyright (c) 2009 Ari Lerner & Cloudteam. See LICENSE for details.  
   EOF
   
   extensions = FileList["#{File.dirname(__FILE__)}/lib/extensions/*.rb"]

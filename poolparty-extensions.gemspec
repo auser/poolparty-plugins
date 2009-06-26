@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{poolparty-extensions}
-  s.version = "0.0.7"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Ari Lerner"]
-  s.date = %q{2009-06-16}
+  s.authors = ["Ari Lerner, Nate Murray, & Michael Fairchild"]
+  s.date = %q{2009-06-26}
   s.email = %q{arilerner@mac.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -18,8 +18,15 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION.yml",
     "lib/extensions/bash_alias.rb",
+    "lib/extensions/convenience_helpers.rb",
     "lib/extensions/development_gem_package.rb",
     "lib/extensions/dynomite.rb",
+    "lib/extensions/ganglia/ganglia.rb",
+    "lib/extensions/ganglia/templates/bin/gmetad.erb",
+    "lib/extensions/ganglia/templates/bin/gmond.erb",
+    "lib/extensions/ganglia/templates/ganglia-web-conf.php.erb",
+    "lib/extensions/ganglia/templates/gmetad.conf.erb",
+    "lib/extensions/ganglia/templates/gmond.conf.erb",
     "lib/extensions/lightcloud.rb",
     "lib/extensions/nanite.rb",
     "lib/extensions/tokyo_tyrant.rb",
