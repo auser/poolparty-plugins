@@ -7,7 +7,8 @@ module PoolParty
     class Hive < Plugin
       def before_load(o={}, &block)
         do_once do
-          install_from_bin
+          # install_from_bin
+          install_from_src
           set_environment_variables
           create_hdfs_directories
         end
@@ -34,19 +35,16 @@ module PoolParty
       end
 
       def download_and_build_src
-        has_exec "svn co #{hive_repo} #{src_dir}",
+        has_exec "svn co #{hive_repo} #{src_dir} -r#{hive_revision}",
           :not_if => "test -e #{src_dir}/build.xml"
+        has_exec "cd #{src_dir} && wget --no-check-certificate https://issues.apache.org/jira/secure/attachment/12409779/hive-487.3.patch",
+          :not_if => "test -e #{src_dir}/hive-487.3.patch"
+        has_exec "cd #{src_dir} && patch -p0 < hive-487.3.patch && mv hive-487.3.patch hive-487.3.patch.applied", 
+          :not_if => "test -e #{src_dir}/hive-487.3.patch.applied"
         has_exec "cd #{src_dir} && ant -Dhadoop.version=\\\"#{hadoop_version}\\\" package",
-          :not_if => "test -e #{src_dir}/build/dist/README.txt"
-      end
-
-
-      def tmp
-        "svn co http://svn.apache.org/repos/asf/hadoop/hive/trunk hive -r781069"
-        "cd /usr/local/hive && wget --no-check-certificate https://issues.apache.org/jira/secure/attachment/12409779/hive-487.3.patch"
-        "root@domU-12-31-38-00-41-F5 18:38 /usr/local/src/hive (hadoop_master) $ patch -p0 < hive-487.3.patch"
-        "rm -rf /usr/local/hive"
-        "mv /usr/local/src/hive/build/dist/ /usr/local/hive"
+          :not_if => "test -e #{hive_home}/README.txt"
+        has_exec "mv #{src_dir}/build/dist #{hive_home}",
+          :not_if => "test -e #{hive_home}"
       end
 
       # todo, pull from parent
@@ -62,16 +60,20 @@ export PATH=$HADOOP_HOME/bin:$HIVE_HOME/bin:$PATH
 
       def create_hdfs_directories
         has_exec "#{hadoop_home}/bin/hadoop fs -mkdir /tmp", 
-          :not_if => "#{hadoop_home}/bin/hadoop fs -ls /tmp"
- 
+          :not_if => "#{hadoop_home}/bin/hadoop fs -ls /tmp",
+          :only_if => "test -e #{hadoop_data_dir}/dfs"
+
         has_exec "#{hadoop_home}/bin/hadoop fs -mkdir /user/hive/warehouse", 
-          :not_if => "#{hadoop_home}/bin/hadoop fs -ls /user/hive/warehouse"
+          :not_if => "#{hadoop_home}/bin/hadoop fs -ls /user/hive/warehouse",
+          :only_if => "test -e #{hadoop_data_dir}/dfs"
 
         has_exec "#{hadoop_home}/bin/hadoop fs -chmod g+w /tmp", 
-          :not_if => "#{hadoop_home}/bin/hadoop fs -ls /tmp" # todo, check perms
+          :not_if => "#{hadoop_home}/bin/hadoop fs -ls /tmp", # todo, check perms
+          :only_if => "test -e #{hadoop_data_dir}/dfs"
  
         has_exec "#{hadoop_home}/bin/hadoop fs -chmod g+w /user/hive/warehouse", 
-          :not_if => "#{hadoop_home}/bin/hadoop fs -ls /user/hive/warehouse"
+          :not_if => "#{hadoop_home}/bin/hadoop fs -ls /user/hive/warehouse",
+          :only_if => "test -e #{hadoop_data_dir}/dfs"
       end
 
       private
@@ -89,22 +91,26 @@ export PATH=$HADOOP_HOME/bin:$HIVE_HOME/bin:$PATH
       end
 
       def hive_repo
-        # "http://svn.apache.org/repos/asf/hadoop/hive/trunk"
-        "http://svn.apache.org/repos/asf/hadoop/hive/tags/release-0.3.0/"
+        # "http://svn.apache.org/repos/asf/hadoop/hive/tags/release-0.3.0/"
+        "http://svn.apache.org/repos/asf/hadoop/hive/trunk"
       end
 
-      ### should pull from parent
+      def hive_revision
+        "781069"
+      end
+
+      ### TODO the values below should pull from parent e.g. the hadoop plugin
       def hadoop_home
         "/usr/local/hadoop"
       end
 
-      # would be really awesome if this was a variable in the hadoop plugin and
-      # this called out to it via parent. todo
+      def hadoop_data_dir
+        "/mnt/hadoop-data"
+      end
+
       def hadoop_version
         "0.20.0"
       end
-
-
 
     end
   end
