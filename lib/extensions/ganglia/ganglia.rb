@@ -149,12 +149,15 @@ module PoolParty
         has_variable "ganglia_masters_ip", :value => lambda { %Q{\`ping -c1  master0 | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
         first_node = clouds[cloud_name].nodes(:status => 'running').first
-        has_variable "ganglia_first_node_in_clusters_ip", :value => lambda { %Q{\`ping -c1  #{first_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
-        has_file(:name => "/etc/ganglia/gmond.conf") do
-          mode 0644
-          template "gmond.conf.erb"
-          # calls get_exec("restart-gmond")
+        if first_node
+          has_variable "ganglia_first_node_in_clusters_ip", :value => lambda { %Q{\`ping -c1  #{first_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
+
+          has_file(:name => "/etc/ganglia/gmond.conf") do
+            mode 0644
+            template "gmond.conf.erb"
+            # calls get_exec("restart-gmond")
+          end
         end
         has_service "gmond", :enabled => true, :running => true, :supports => [:restart]
 
