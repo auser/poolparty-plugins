@@ -206,11 +206,14 @@ EOF
 
      # stuff for examples
 
+     def prep_example_job
+       download_sample_data
+     end
+
      def run_example_job
        start_hadoop
-       download_sample_data
-       # copy_sample_data_to_hdfs
-       # start_the_job
+       copy_sample_data_to_hdfs
+       start_the_job
      end
 
      def start_hadoop
