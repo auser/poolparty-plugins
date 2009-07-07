@@ -139,6 +139,7 @@ EOF
           :not_if => "test -e #{hadoop_install_dir}"
         has_exec "mv /usr/local/src/hadoop #{hadoop_install_dir}",
           :not_if => "test -e #{hadoop_install_dir}"
+        # apply https://issues.apache.org/jira/secure/attachment/12407207/HADOOP-4675-v7.patch for ganglia 3.1 support
       end
 
       def hadoop_install_dir

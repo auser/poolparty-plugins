@@ -24,6 +24,18 @@
   <value><%= @node[:poolparty][:hadoop_data_dir] %>/dfs/data</value>
 </property>
 
+<property>
+  <name>dfs.hosts</name>
+  <value>/usr/local/hadoop/conf/slaves</value>
+  <description>
+    When we have a number of users connecting to the hadoop cloud they may
+    accidentially run "start-all.sh" and then their local machine will try to
+    connect to the cluster. We limit the machines that can be a part of the
+    hdfs to be only those listed in the slaves file. See 
+    http://www.cloudera.com/blog/2008/12/03/securing-a-hadoop-cluster-through-a-gateway/
+  </description>
+</property>
+
 
 <!--
 <property>

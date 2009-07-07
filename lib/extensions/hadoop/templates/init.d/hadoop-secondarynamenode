@@ -1,0 +1,119 @@
+#! /bin/sh
+#
+# skeleton  example file to build /etc/init.d/ scripts.
+#    This file should be used to construct scripts for /etc/init.d.
+#
+#    Written by Miquel van Smoorenburg <miquels@cistron.nl>.
+#    Modified for Debian
+#    by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+#               Further changes by Javier Fernandez-Sanguino <jfs@debian.org>
+#
+# Version:  @(#)skeleton  1.9  26-Feb-2001  miquels@cistron.nl
+#
+### BEGIN INIT INFO
+# Provides:          hadoop-secondarynamenode
+# Required-Start:    $network $local_fs
+# Required-Stop:
+# Should-Start:      $named
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Hadoop secondarynamenode daemon
+### END INIT INFO
+
+set -e
+
+# Include hadoop defaults if available
+if [ -f /etc/default/hadoop ] ; then
+  . /etc/default/hadoop
+fi
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON_SCRIPT=$HADOOP_HOME/bin/hadoop-daemon.sh
+NAME=hadoop-secondarynamenode
+DESC="Hadoop secondarynamenode daemon"
+
+test -x $DAEMON_SCRIPT || exit 0
+
+LOGDIR=$HADOOP_LOG_DIR
+PIDFILE=/var/run/hadoop/secondarynamenode.pid
+DODTIME=3                   # Time to wait for the server to die, in seconds
+                            # If this value is set too low you might not
+                            # let some servers to die gracefully and
+                            # 'restart' will not work
+
+get_running_pid() {
+    pid=$(ps axw -eo pid,command | tr 'A-Z' 'a-z' | grep org.apache.hadoop | grep secondarynamenode | grep java | awk '{print $1}')
+}
+
+running() {
+    get_running_pid
+    [ -z "$pid" ] && return 1
+    return 0
+}
+
+start() {
+    su -s /bin/sh hadoop -c "$HADOOP_HOME/bin/hadoop-daemon.sh start secondarynamenode"
+}
+stop() {
+    su -s /bin/sh hadoop -c "$HADOOP_HOME/bin/hadoop-daemon.sh stop secondarynamenode"
+}
+
+
+case "$1" in
+  start)
+        echo -n "Starting $DESC: "
+        start
+        if running ; then
+            echo "$NAME."
+        else
+            echo "ERROR."
+        fi
+  ;;
+  stop)
+        echo -n "Stopping $DESC: "
+        stop
+        if ! running ; then
+            echo 'ERROR'
+        else
+            echo "$NAME."
+        fi
+  ;;
+  force-stop)
+  echo -n "Forcefully stopping $DESC: "
+        get_running_pid
+        kill -9 $pid
+        if ! running ; then
+            echo "$NAME."
+        else
+            echo " ERROR."
+        fi
+  ;;
+  force-reload)
+  # check wether $DAEMON is running. If so, restart
+        running && $0 restart
+  ;;
+  restart)
+        echo -n "Restarting $DESC: "
+        stop
+        [ -n "$DODTIME" ] && sleep $DODTIME
+        $0 start
+  ;;
+  status)
+    echo -n "$NAME is "
+    if running ;  then
+        echo "running"
+    else
+        echo "not running."
+        exit 1
+    fi
+    ;;
+  *)
+  N=/etc/init.d/$NAME
+  # echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
+  echo "Usage: $N {start|stop|restart|force-reload|status|force-stop}" >&2
+  exit 1
+  ;;
+esac
+
+exit 0
