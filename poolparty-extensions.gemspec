@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{poolparty-extensions}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ari Lerner, Nate Murray, & Michael Fairchild"]
-  s.date = %q{2009-06-26}
+  s.date = %q{2009-07-07}
   s.email = %q{arilerner@mac.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -27,6 +27,22 @@ Gem::Specification.new do |s|
     "lib/extensions/ganglia/templates/ganglia-web-conf.php.erb",
     "lib/extensions/ganglia/templates/gmetad.conf.erb",
     "lib/extensions/ganglia/templates/gmond.conf.erb",
+    "lib/extensions/ganglia/templates/hadoop-metrics.properties.erb",
+    "lib/extensions/hadoop/hadoop.rb",
+    "lib/extensions/hadoop/templates/core-site.xml.erb",
+    "lib/extensions/hadoop/templates/hadoop-env.sh",
+    "lib/extensions/hadoop/templates/hadoop-site.xml.erb",
+    "lib/extensions/hadoop/templates/hadoop_hosts.erb",
+    "lib/extensions/hadoop/templates/hdfs-site.xml.erb",
+    "lib/extensions/hadoop/templates/init.d/hadoop-datanode",
+    "lib/extensions/hadoop/templates/init.d/hadoop-jobtracker",
+    "lib/extensions/hadoop/templates/init.d/hadoop-namenode",
+    "lib/extensions/hadoop/templates/init.d/hadoop-secondarynamenode",
+    "lib/extensions/hadoop/templates/init.d/hadoop-tasktracker",
+    "lib/extensions/hadoop/templates/jvm.conf",
+    "lib/extensions/hadoop/templates/log4j.properties.erb",
+    "lib/extensions/hadoop/templates/mapred-site.xml.erb",
+    "lib/extensions/hive/hive.rb",
     "lib/extensions/lightcloud.rb",
     "lib/extensions/nanite.rb",
     "lib/extensions/tokyo_tyrant.rb",
