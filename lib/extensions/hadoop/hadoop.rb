@@ -195,6 +195,24 @@ EOF
 
      def configure_master
        # create_master_and_slaves_files
+
+       %w{datanode jobtracker namenode secondarynamenode}.each do |hadoop_role|
+         has_hadoop_service(hadoop_role)
+       end
+     end
+
+     def configure_slave
+       %w{datanode tasktracker}.each do |hadoop_role|
+         has_hadoop_service(hadoop_role)
+       end
+     end
+
+     def has_hadoop_service(hadoop_role) 
+        has_file(:name => "/etc/init.d/hadoop-#{hadoop_role}") do
+          mode 0755
+          template "init.d/hadoop-#{hadoop_role}"
+        end
+        has_service "hadoop-#{hadoop_role}", :enabled => true, :running => true, :supports => [:restart]
      end
 
      def format_hdfs

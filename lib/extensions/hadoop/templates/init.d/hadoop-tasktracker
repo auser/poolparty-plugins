@@ -24,8 +24,8 @@
 set -e
 
 # Include hadoop defaults if available
-if [ -f /etc/default/hadoop ] ; then
-  . /etc/default/hadoop
+if [ -f /usr/local/hadoop/conf/hadoop-env.sh ] ; then
+  . /usr/local/hadoop/conf/hadoop-env.sh
 fi
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
@@ -53,10 +53,10 @@ running() {
 }
 
 start() {
-    su -s /bin/sh hadoop -c "$HADOOP_HOME/bin/hadoop-daemon.sh start tasktracker"
+    su -s /bin/sh root -c "$HADOOP_HOME/bin/hadoop-daemon.sh start tasktracker"
 }
 stop() {
-    su -s /bin/sh hadoop -c "$HADOOP_HOME/bin/hadoop-daemon.sh stop tasktracker"
+    su -s /bin/sh root -c "$HADOOP_HOME/bin/hadoop-daemon.sh stop tasktracker"
 }
 
 
