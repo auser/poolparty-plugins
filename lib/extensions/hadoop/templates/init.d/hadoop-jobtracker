@@ -63,11 +63,17 @@ stop() {
 case "$1" in
   start)
         echo -n "Starting $DESC: "
-        start
+
         if running ; then
             echo "$NAME."
+            echo "Already running."
         else
-            echo "ERROR."
+            start
+            if running ; then
+                echo "$NAME."
+            else
+                echo "ERROR."
+            fi
         fi
   ;;
   stop)
