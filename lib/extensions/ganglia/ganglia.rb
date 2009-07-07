@@ -41,6 +41,7 @@ module PoolParty
   module Plugin
     class Ganglia < Plugin
       def before_load(o={}, &block)
+        @monitored_features ||= {}
         do_once do
           install_dependencies
           download
@@ -143,12 +144,18 @@ module PoolParty
         has_service "gmetad", :enabled => true, :running => true, :supports => [:restart]
       end
 
+      def track(*features)
+        @monitored_features ||= {}
+        features.map {|f| @monitored_features[f] = true }
+      end
+
       def gmond_after_all_loaded
         has_variable "ganglia_cloud_name", :value => cloud_name 
         has_variable "ganglia_this_nodes_private_ip", :value => lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}}
         has_variable "ganglia_masters_ip", :value => lambda { %Q{\`ping -c1  master0 | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
         first_node = clouds[cloud_name].nodes(:status => 'running').first
+
 
         if first_node
           has_variable "ganglia_first_node_in_clusters_ip", :value => lambda { %Q{\`ping -c1  #{first_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
@@ -158,9 +165,24 @@ module PoolParty
             template "gmond.conf.erb"
             # calls get_exec("restart-gmond")
           end
+
+          enable_tracking_configs
+
         end
         has_service "gmond", :enabled => true, :running => true, :supports => [:restart]
 
+      end
+
+      def enable_tracking_configs
+        if @monitored_features[:hadoop]
+          has_variable "hadoop_ganglia_monitoring_enabled", :value => true
+          
+          # hmm, should maybe be mvd to hadoop plugin?
+          has_file(:name => "/usr/local/hadoop/conf/hadoop-metrics.properties") do
+            mode 0644
+            template "hadoop-metrics.properties.erb"
+          end
+        end
       end
 
       # todo, add a verifier
