@@ -1,5 +1,6 @@
 /* This configuration is as close to 2.5.x default behavior as possible
    The values closely match ./gmond/metric.h definitions in 2.5.x */
+/* some comments borrowed from http://www-user.tu-chemnitz.de/~aas/wiki/lib/exe/fetch.php?id=projekte%3Aganglia&cache=cache&media=gmond.conf.template */
 globals {
   daemonize = yes
   setuid = yes
@@ -31,6 +32,40 @@ host {
   location = "unspecified"
 }
 
+
+
+/*
+	UDP send channels
+
+	Gmond will use UDP send channel(s) for sending monitoring
+	data it collects from _the local node_ to other nodes.
+
+	There are two different kinds of UDP send channels:
+	- unicast channel:
+	  specifies a single host that is supposed to receive monitoring
+	  data from other client nodes
+
+	- multicast channel:
+	  specifies a multicast domain that will be used to spread monitoring data
+
+	Note:
+	- the type of channel that should be used depends on the kind of monitoring 
+	  architecture you want to implement
+	- make sure to set 'mute = no' in the global configuration section!
+	- multiple UDP send channels can be configured
+	- gmond will send its data through all channels simultaneously
+	
+	See "Monitoringsoftware Ganglia - Installation, Konfiguration und Bewertung",
+	section "Architektur der Monitoringsoftware Ganglia" for further details!
+*/
+
+/*
+	Unicast UDP send channels:
+	- the target host has to be a node running gmond
+	- the gmond running on the target host has to be configured to
+	  accept data from other gmonds
+*/
+
 /* Feel free to specify as many udp_send_channels as you like.  Gmond
    used to only support having a single channel */
 udp_send_channel {
@@ -40,6 +75,33 @@ udp_send_channel {
   port = 8649
   ttl = 1
 }
+
+
+/*
+	UDP receive channels
+
+	Gmond will 'listen' on all UDP receive channels for incoming
+	monitoring data. Incoming data from other gmonds will be added
+	to the cluster state maintained by the local node.
+
+	There are two different kinds of UDP receive channels:
+	- unicast channel:
+	  specifies a single UDP port that will accept incoming data
+
+	- multicast channel:
+	  tells gmond to join a multicast domain and accept incoming
+	  data sent by other members of the same domain
+
+	Note:
+	- the type of channel that should be used depends on the kind of monitoring 
+	  architecture you want to implement
+	- make sure to set 'deaf = no' in the global configuration section!
+	- multiple UDP receive channels can be configured
+	- gmond will accept data on all channels simultaneously
+
+	See "Monitoringsoftware Ganglia - Installation, Konfiguration und Bewertung",
+	section "Architektur der Monitoringsoftware Ganglia" for further details!
+*/
 
 /* You can specify as many udp_recv_channels as you like as well. */
 udp_recv_channel {
@@ -57,6 +119,21 @@ udp_recv_channel {
 <%# if @node[:poolparty][:ganglia_gmond_is_master] %>
 <%# end %>
 
+
+
+/*
+	TCP accept channels
+
+	Gmond will listen on all TCP accept channels for incoming connections
+	from nodes running gmetad. When a gmetad connects, gmond will transmit
+	_all monitoring data_ it has collected so far (i.e. the state of the
+	_whole cluster_ as far as gmond knows about it).
+
+	Note:
+	- make sure to set 'mute = no' in the global configuration section
+	- multiple TCP accept channels can be configured
+	- gmond will accept requests on all channels simultaneously
+*/
 /* You can specify as many tcp_accept_channels as you like to share
    an xml description of the state of the cluster */
 tcp_accept_channel {

@@ -129,6 +129,7 @@ module PoolParty
           line = "data_source \\\"#{cloud_name}\\\" "
           ips = []
           clouds[cloud_name.intern].nodes(:status => 'running').each_with_index do |n, i|
+            # todo - what if we used master0, slave0 etc here?
             ips << n[:private_dns_name] + ":8649"
           end
           data_sources << (line + ips.join(" ") + "\n")
@@ -136,6 +137,11 @@ module PoolParty
         data_sources.gsub!(/\n/, '\n')
 
         has_variable "ganglia_gmetad_data_sources", :value => data_sources
+
+        # poolname = clouds.values.first.pool.name
+        # has_variable "ganglia_pool_name", :value => (poolname && !poolname.empty? ? poolname : "pool")
+        has_variable "ganglia_pool_name", :value => "pool"
+
         has_file(:name => "/etc/ganglia/gmetad.conf") do
           mode 0644
           template "gmetad.conf.erb"
