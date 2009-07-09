@@ -7,7 +7,7 @@
 
 <property>
   <name>dfs.replication</name>
-  <value><%= @node[:poolparty][:number_of_nodes] || 1 %></value>
+  <value><%= @node[:poolparty][:block_replication_level] || 3 %></value>
   <description>Default block replication.
   The actual number of replications can be specified when the file is created.
   The default is used if replication is not specified in create time.
@@ -24,9 +24,10 @@
   <value><%= @node[:poolparty][:hadoop_data_dir] %>/dfs/data</value>
 </property>
 
+<!--
 <property>
   <name>dfs.hosts</name>
-  <value>/usr/local/hadoop/conf/slaves</value>
+  <value>/usr/local/hadoop/conf/hosts</value>
   <description>
     When we have a number of users connecting to the hadoop cloud they may
     accidentially run "start-all.sh" and then their local machine will try to
@@ -35,13 +36,13 @@
     http://www.cloudera.com/blog/2008/12/03/securing-a-hadoop-cluster-through-a-gateway/
   </description>
 </property>
+-->
 
+<!-- slave.host.name -->
 
-<!--
 <property>
 <name>dfs.permissions</name>
-<value>false</value>
+<value>true</value>
 </property>
--->
 
 </configuration>

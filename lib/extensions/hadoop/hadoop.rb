@@ -119,6 +119,9 @@ module PoolParty
 Host *
        IdentityFile #{home_dir}/.ssh/#{hadoop_id_rsa_base}
 EOF
+
+        # has_file("#{home_dir}/.ssh/known_hosts", :template => "known_hosts.erb", :owner => user, :group => user, :mode => "600") # clear out the known hosts file
+
         has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} localhost echo", :user => user # verify the host key
 
         has_file("#{home_dir}/ssh_config", :content => ssh_config)
@@ -142,6 +145,11 @@ EOF
         # apply https://issues.apache.org/jira/secure/attachment/12407207/HADOOP-4675-v7.patch for ganglia 3.1 support
       end
 
+      def build_src
+        # TODO build from source so we can apply patches.
+        # export JAVA_HOME=/usr/lib/jvm/java-6-sun
+      end
+
       def hadoop_install_dir
         "/usr/local/hadoop"
       end
@@ -154,9 +162,8 @@ EOF
 
         has_variable "current_master", :value => "master0" # todo, could eventually be made more dynamic here
 
-        # puts "we have this many nodes in our pool: #{number_of_running_nodes_in_pool}"
-        # has_variable "number_of_nodes", :value => lambda { %Q{ %x[/usr/bin/cloud-list --short].split("\\n").size || 1 }}
-        has_variable "number_of_nodes", :value => 2 # todo
+        has_variable "block_replication_level", :value => 3 # todo  # huh, this isn't the number of nodes, this is the block replication level
+        # this should be able to be configured in the hadoop config
 
         has_directory hadoop_data_dir, :owner => user, :mode => "755"
         has_exec "chgrp -R #{group} #{hadoop_data_dir}"
@@ -288,6 +295,17 @@ EOF
 
      def create_aliases
         has_bash_alias :name => "cd-hadoop", :value => "pushd /usr/local/hadoop"
+     end
+
+     def create_client_user(username)
+       has_user(username)
+       has_directory("/home/#{username}/.ssh", :mode => "700", :owner => username, :group => username)
+       has_exec "#{hadoop_install_dir}/bin/hadoop fs -mkdir /user/#{username}", :user => user,
+         :only_if => "sudo -H -u #{user} #{hadoop_install_dir}/bin/hadoop fs -ls /user",
+         :not_if =>  "sudo -H -u #{user} #{hadoop_install_dir}/bin/hadoop fs -ls /user/#{username}"
+
+       has_exec "#{hadoop_install_dir}/bin/hadoop fs -chown #{username} /user/#{username}", :user => user,
+         :only_if => "sudo -H -u #{user} #{hadoop_install_dir}/bin/hadoop fs -ls /user/#{username}"
      end
 
       private
