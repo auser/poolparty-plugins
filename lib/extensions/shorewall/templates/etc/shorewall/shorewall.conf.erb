@@ -18,7 +18,7 @@
 #		       S T A R T U P   E N A B L E D
 ###############################################################################
 
-STARTUP_ENABLED=No
+STARTUP_ENABLED=Yes
 
 ###############################################################################
 #		              V E R B O S I T Y
@@ -37,28 +37,17 @@ SHOREWALL_COMPILER=
 #			       L O G G I N G
 ###############################################################################
 
-LOGFILE=/var/log/messages
-
+LOGFILE=/var/log/firewall
 LOGFORMAT="Shorewall:%s:%s:"
-
 LOGTAGONLY=No
-
 LOGRATE=
-
 LOGBURST=
-
 LOGALLNEW=
-
 BLACKLIST_LOGLEVEL=
-
 MACLIST_LOG_LEVEL=info
-
 TCP_FLAGS_LOG_LEVEL=info
-
 RFC1918_LOG_LEVEL=info
-
 SMURF_LOG_LEVEL=info
-
 LOG_MARTIANS=keep
 
 ###############################################################################
@@ -66,21 +55,13 @@ LOG_MARTIANS=keep
 ###############################################################################
 
 IPTABLES=
-
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-
 SHOREWALL_SHELL=/bin/sh
-
 SUBSYSLOCK=/var/lock/subsys/shorewall
-
 MODULESDIR=
-
 CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
-
 RESTOREFILE=
-
 IPSECFILE=zones
-
 LOCKFILE=
 
 ###############################################################################
@@ -105,85 +86,47 @@ RCP_COMMAND='scp ${files} ${root}@${system}:${destination}'
 ###############################################################################
 
 IP_FORWARDING=On
-
 ADD_IP_ALIASES=Yes
-
 ADD_SNAT_ALIASES=No
-
 RETAIN_ALIASES=No
-
 TC_ENABLED=Internal
-
 TC_EXPERT=No
-
 CLEAR_TC=Yes
-
 MARK_IN_FORWARD_CHAIN=No
-
 CLAMPMSS=No
-
 ROUTE_FILTER=No
-
 DETECT_DNAT_IPADDRS=No
-
 MUTEX_TIMEOUT=60
-
 ADMINISABSENTMINDED=Yes
-
 BLACKLISTNEWONLY=Yes
-
 DELAYBLACKLISTLOAD=No
-
 MODULE_SUFFIX=
-
 DISABLE_IPV6=Yes
-
 BRIDGING=No
-
 DYNAMIC_ZONES=No
-
 PKTTYPE=Yes
-
 RFC1918_STRICT=No
-
 MACLIST_TABLE=filter
-
 MACLIST_TTL=
-
 SAVE_IPSETS=No
-
 MAPOLDACTIONS=No
-
 FASTACCEPT=No
-
 IMPLICIT_CONTINUE=Yes
-
 HIGH_ROUTE_MARKS=No
-
 USE_ACTIONS=Yes
-
 OPTIMIZE=1
-
 EXPORTPARAMS=No
-
 EXPAND_POLICIES=No
-
 KEEP_RT_TABLES=No
-
 DELETE_THEN_ADD=Yes
-
 MULTICAST=No
-
 DONT_LOAD=
-
 ###############################################################################
 #			P A C K E T   D I S P O S I T I O N
 ###############################################################################
 
 BLACKLIST_DISPOSITION=DROP
-
 MACLIST_DISPOSITION=REJECT
-
 TCP_FLAGS_DISPOSITION=DROP
 
 #LAST LINE -- DO NOT REMOVE

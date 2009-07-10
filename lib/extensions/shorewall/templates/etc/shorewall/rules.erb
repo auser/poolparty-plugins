@@ -19,11 +19,12 @@
 #							PORT	PORT(S)		DEST		LIMIT		GROUP
 
 # Drop Ping from the "bad" net zone.. and prevent your log from being flooded..
-
 Ping/DROP	net		$FW
 
 # Permit all ICMP traffic FROM the firewall TO the net zone
-
 ACCEPT		$FW		net		icmp
+
+# PoolParty configured rules
+<%= @node[:poolparty][:shorewall_rules] %>
 
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
