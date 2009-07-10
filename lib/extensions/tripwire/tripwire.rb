@@ -18,7 +18,6 @@ module PoolParty
       dsl_methods :root_dir,
                   :mailto
 
-      # def before_load(o={}, &block)
       def loaded(o={}, &block)
         do_once do
           install_from_src
@@ -26,11 +25,13 @@ module PoolParty
       end
 
       def install_from_src
+        install_dependencies
         download
         configure_and_build
       end
 
       def smtp_settings host, username, password, port=25
+        has_variable "tripwire_smtp_settings", :value => true
         @smtp_settings ||= {:host => host, :username => username, :password => password, :port => port}
         %w{host username password port}.each do |setting|
           has_variable "tripwire_smtp_#{setting}", :value => eval(setting)
@@ -38,6 +39,10 @@ module PoolParty
       end
 
       private
+      def install_dependencies
+        has_package "expect"
+      end
+
       def download
         has_exec "wget http://softlayer.dl.sourceforge.net/sourceforge/tripwire/tripwire-2.4.1.2-src.tar.bz2 -O /usr/local/src/tripwire-2.4.1.2-src.tar.bz2",
           :not_if => "test -e /usr/local/src/tripwire-2.4.1.2-src.tar.bz2"
@@ -52,6 +57,7 @@ module PoolParty
           :not_if => "test -e #{tripwire_src}/Makefile"
         has_exec "cd #{tripwire_src} && make",
           :not_if => "test -e #{tripwire_src}/bin/tripwire"
+        has_file :name => "#{tripwire_src}/install/install.cfg", :mode => "0644", :template => "install.cfg.erb"
       end
 
       def src_dir
@@ -60,6 +66,14 @@ module PoolParty
 
       def tripwire_src
         "/usr/local/src/tripwire-2.4.1.2-src"
+      end
+
+      def ideas
+         # chkrootkit
+         # wget ftp://ftp.pangeia.com.br/pub/seg/pac/chkrootkit.tar.gz 
+         # tar -xzvf chkrootkit.tar.gz 
+         # cd chkrootkit-version (whatever version is) 
+         # ./chkrootkit 
       end
 
 

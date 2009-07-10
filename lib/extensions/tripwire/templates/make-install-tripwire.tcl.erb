@@ -1,0 +1,29 @@
+# usage expect install-tripwire.tcl pass1 pass2 
+set PASS1 [lindex $argv 0]
+set PASS2 [lindex $argv 1]
+
+spawn make install
+
+expect "Press ENTER to view the License Agreement."
+send "\r"
+send "q"
+expect "license agreement. \[do not accept\]"
+send "accept\r"
+expect "Continue with installation? \[y/n\]"
+send "y\r"
+
+expect "Enter the site keyfile passphrase:"
+send "$PASS1\r"
+expect "Verify the site keyfile passphrase:"
+send "$PASS1\r"
+
+expect "Enter the local keyfile passphrase:"
+send "$PASS2\r"
+expect "Verify the local keyfile passphrase:"
+send "$PASS2\r"
+
+expect "Please enter your site passphrase:"
+send "$PASS1\r"
+
+expect "Please enter your site passphrase:"
+send "$PASS1\r"
