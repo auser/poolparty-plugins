@@ -48,6 +48,7 @@ module PoolParty
       end
 
       def add_packages
+        has_package "curl"
         has_package "tree"
         has_package "vim-nox"
         has_package" screen"
@@ -66,7 +67,7 @@ module PoolParty
       def add_binaries
         has_exec "wget http://gist.github.com/raw/131294/0622454b2cc2f787c04d20ab3d47e888e31edcd4/gistfile1 -O /usr/bin/xtail && chmod +x /usr/bin/xtail", 
           :not_if => "test -e /usr/bin/xtail"
-        has_exec "curl timkay.com/aws/aws -o /usr/bin/aws", :not_if => "test -e /usr/bin/aws"
+        has_exec "curl http://timkay.com/aws/aws -o /usr/bin/aws", :not_if => "test -e /usr/bin/aws"
       end
 
       def add_profile_updates
