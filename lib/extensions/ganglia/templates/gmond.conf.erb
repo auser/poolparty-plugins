@@ -32,8 +32,6 @@ host {
   location = "unspecified"
 }
 
-
-
 /*
 	UDP send channels
 
@@ -57,9 +55,7 @@ host {
 	
 	See "Monitoringsoftware Ganglia - Installation, Konfiguration und Bewertung",
 	section "Architektur der Monitoringsoftware Ganglia" for further details!
-*/
 
-/*
 	Unicast UDP send channels:
 	- the target host has to be a node running gmond
 	- the gmond running on the target host has to be configured to
@@ -75,7 +71,6 @@ udp_send_channel {
   port = 8649
   ttl = 1
 }
-
 
 /*
 	UDP receive channels
@@ -101,9 +96,8 @@ udp_send_channel {
 
 	See "Monitoringsoftware Ganglia - Installation, Konfiguration und Bewertung",
 	section "Architektur der Monitoringsoftware Ganglia" for further details!
-*/
 
-/* You can specify as many udp_recv_channels as you like as well. */
+    You can specify as many udp_recv_channels as you like. */
 udp_recv_channel {
   /* mcast_join = <%= @node[:poolparty][:ganglia_this_nodes_private_ip] %> */
   port = 8649
@@ -115,12 +109,8 @@ udp_recv_channel {
     default = "allow"
   }
 }
-
 <%# if @node[:poolparty][:ganglia_gmond_is_master] %>
 <%# end %>
-
-
-
 /*
 	TCP accept channels
 
@@ -133,19 +123,16 @@ udp_recv_channel {
 	- make sure to set 'mute = no' in the global configuration section
 	- multiple TCP accept channels can be configured
 	- gmond will accept requests on all channels simultaneously
-*/
-/* You can specify as many tcp_accept_channels as you like to share
+
+   You can specify as many tcp_accept_channels as you like to share
    an xml description of the state of the cluster */
 tcp_accept_channel {
   port = 8649
   bind = <%= @node[:poolparty][:ganglia_this_nodes_private_ip] %>
-
   acl {
     default = "allow"
   }
-
 }
-
 
 /* Each metrics module that is referenced by gmond must be specified and
    loaded. If the module has been statically linked with gmond, it does
@@ -436,4 +423,4 @@ collection_group {
 }
 
 
-# vim: ft=javascript
+/* vim: ft=javascript */

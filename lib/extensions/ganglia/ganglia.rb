@@ -98,6 +98,7 @@ module PoolParty
           calls get_exec("restart-gmond")
         end
 
+        install_extra_gmond_monitors
       end
 
       def gmetad
@@ -188,6 +189,23 @@ module PoolParty
             mode 0644
             template "hadoop-metrics.properties.erb"
           end
+        end
+      end
+
+      def install_extra_gmond_monitors
+        has_directory(:name => "/etc/ganglia/bin/monitors")
+        %w{sshd_ganglia}.each do |monitor|
+          has_file(:name => "/etc/ganglia/bin/monitors/#{monitor}") do
+            mode 0755
+            template "bin/monitors/#{monitor}.sh"
+          end
+          has_cron( :name => "ganglia_monitor_#{monitor}",
+                    :command => "bash -c /etc/ganglia/bin/monitors/#{monitor}",
+                    :user => "root",
+                    :minute => "*/5",
+                    :hour => "*",
+                    :month => "*",
+                    :weekday => "*")
         end
       end
 
