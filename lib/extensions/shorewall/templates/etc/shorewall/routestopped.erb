@@ -1,5 +1,5 @@
 #
-# Shorewall version 4.0 - Sample Interfaces File for one-interface configuration.
+# Shorewall version 4.0 - Sample Routestopped File for two-interface configuration.
 # Copyright (C) 2006 by the Shorewall Team
 #
 # This library is free software; you can redistribute it and/or
@@ -9,13 +9,18 @@
 #
 # See the file README.txt for further details.
 #------------------------------------------------------------------------------
-# For information about entries in this file, type "man shorewall-interfaces"
+# For information about entries in this file, type "man shorewall-routestopped"
 #
 # The manpage is also online at 
-# http://shorewall.net/manpages/shorewall-interfaces.html
+# http://shorewall.net/manpages/shorewall-routestopped.html
 #
-###############################################################################
-#ZONE	INTERFACE	BROADCAST	OPTIONS
-net     eth0            detect          dhcp,tcpflags,logmartians,nosmurfs
+# See 
+# http://shorewall.net/starting_and_stopping_shorewall.htm for additional
+# information.
+#
+##############################################################################
+#INTERFACE      HOST(S)                  OPTIONS
+eth0            10.0.0.0/8 
+eth0            192.1680.0/16 
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 # vim: ft=shorewall

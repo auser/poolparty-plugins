@@ -15,10 +15,11 @@
 # http://shorewall.net/manpages/shorewall-policy.html
 #
 ###############################################################################
-#SOURCE		DEST		POLICY		LOG LEVEL	LIMIT:BURST
-$FW		net		ACCEPT
-net		$FW		DROP		info
-net		all		DROP		info
+#SOURCE		DEST   		POLICY 		LOG LEVEL	LIMIT:BURST
+$FW    		net    		ACCEPT
+net    		$FW    		DROP   		info
+net    		all    		DROP   		info
 # The FOLLOWING POLICY MUST BE LAST
-all		all		REJECT		info
+all    		all		REJECT		info
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+# vim: ft=shorewall
