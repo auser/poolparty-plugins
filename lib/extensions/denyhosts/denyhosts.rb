@@ -38,7 +38,12 @@ module PoolParty
       end
 
       def install
-        has_package "denyhosts" 
+        # when installing denyhosts we first want to archive our auth.log
+        # because various processes may have tried to login from our address
+        # for whatever reason.
+        has_exec({:name => "archive_auth_log", :command => "mv /var/log/auth.log /var/log/auth.log.orig"},
+                 :not_if => "test -e /etc/init.d/denyhosts") # if denyhosts isnt already installed
+        has_package "denyhosts"
         has_service "denyhosts", :enabled => true, :running => true, :supports => [:restart]
         has_exec({:name => "restart-denyhosts", :command => "/etc/init.d/denyhosts restart", :action => :nothing})
       end
