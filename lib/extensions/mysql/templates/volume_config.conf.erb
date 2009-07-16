@@ -1,0 +1,9 @@
+[mysqld]
+innodb_file_per_table
+datadir          = /vol/lib/mysql
+log_bin          = /vol/log/mysql/mysql-bin.log
+max_binlog_size  = 1000M
+#log_slow_queries = /vol/log/mysql/mysql-slow.log
+#long_query_time  = 10
+# bind_address     = master
+# skip-networking
