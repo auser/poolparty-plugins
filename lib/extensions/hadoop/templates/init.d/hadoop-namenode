@@ -43,7 +43,7 @@ DODTIME=3                   # Time to wait for the server to die, in seconds
                             # 'restart' will not work
 
 get_running_pid() {
-    pid=$(ps axw -eo pid,command | tr 'A-Z' 'a-z' | grep org.apache.hadoop | grep namenode | grep java | awk '{print $1}')
+    pid=$(ps axw -eo pid,command | tr 'A-Z' 'a-z' | grep org.apache.hadoop | grep namenode.namenode | grep java | awk '{print $1}')
 }
 
 running() {
