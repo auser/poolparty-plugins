@@ -91,29 +91,39 @@ module PoolParty
       end
 
       def create_reference_hosts
-        clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n, i|
-          # has_host(:name => "master#{i}", :ip => n.public_ip)  # todo
-          # my_line_in_file("/etc/hosts", "#{n.public_ip} master#{i}")
-          has_exec "ghost modify master#{i} \`dig +short #{n[:private_dns_name]}\`"
+        if clouds[:hadoop_master]
+          clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n, i|
+            # has_host(:name => "master#{i}", :ip => n.public_ip)  # todo
+            # my_line_in_file("/etc/hosts", "#{n.public_ip} master#{i}")
+            has_exec "ghost modify master#{i} \`dig +short #{n[:private_dns_name]}\`"
+          end
         end
-        clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n, i|
-          # has_host(:name => "slave#{i}", :ip => n.public_ip)  # todo
-          # my_line_in_file("/etc/hosts", "#{n.public_ip} slave#{i}")
-          has_exec "ghost modify slave#{i} \`dig +short #{n[:private_dns_name]}\`"
+
+        if clouds[:hadoop_slave]
+          clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n, i|
+            # has_host(:name => "slave#{i}", :ip => n.public_ip)  # todo
+            # my_line_in_file("/etc/hosts", "#{n.public_ip} slave#{i}")
+            has_exec "ghost modify slave#{i} \`dig +short #{n[:private_dns_name]}\`"
+          end
         end
       end
 
       def create_ssh_configs
         ssh_config = ""
-        clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n,i| 
-          has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} master#{i} echo || :", :user => user, # verify the host key
-            :only_if => "grep master#{i} /etc/hosts"
-        end 
 
-        clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n,i| 
-          has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} slave#{i} echo || :", :user => user, # verify the host key
-            :only_if => "grep slave#{i} /etc/hosts"
-        end 
+        if clouds[:hadoop_master]
+          clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n,i| 
+            has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} master#{i} echo || :", :user => user, # verify the host key
+              :only_if => "grep master#{i} /etc/hosts"
+          end 
+        end
+
+        if clouds[:hadoop_slave]
+          clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n,i| 
+            has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} slave#{i} echo || :", :user => user, # verify the host key
+              :only_if => "grep slave#{i} /etc/hosts"
+          end 
+        end
 
         ssh_config << <<EOF
 Host *
@@ -154,13 +164,22 @@ EOF
         "/usr/local/hadoop"
       end
 
+      def set_current_master(hostname="master0", port="54310")
+        unless @hadoop_set_current_master
+          has_variable "current_master", :value => hostname # todo, could eventually be made more dynamic here
+          has_variable "hadoop_fs_default_port", :value => port # todo, could eventually be made more dynamic here
+          @hadoop_set_current_master = true
+        end
+      end
+
       def configure
+        has_gem_package("bjeanes-ghost")
+
         has_file(:name => hadoop_install_dir/"conf/hadoop-env.sh") do
           mode 0644
           template "hadoop-env.sh"
         end
 
-        has_variable "current_master", :value => "master0" # todo, could eventually be made more dynamic here
 
         has_variable "block_replication_level", :value => 3 # todo  # huh, this isn't the number of nodes, this is the block replication level
         # this should be able to be configured in the hadoop config
@@ -202,6 +221,7 @@ EOF
 
      def configure_master
        # create_master_and_slaves_files
+       set_current_master
 
        %w{datanode jobtracker namenode secondarynamenode}.each do |hadoop_role|
          has_hadoop_service(hadoop_role)
@@ -209,6 +229,8 @@ EOF
      end
 
      def configure_slave
+       set_current_master
+
        %w{datanode tasktracker}.each do |hadoop_role|
          has_hadoop_service(hadoop_role)
        end
@@ -280,13 +302,17 @@ EOF
        masters_file = ""
        slaves_file  = ""
 
-       clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n,i| 
-         masters_file << "master#{i}\n"
-         # slaves_file  << "master#{i}\n" # our masters are also slaves
-       end 
+       if clouds[:hadoop_master]
+         clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n,i| 
+           masters_file << "master#{i}\n"
+           # slaves_file  << "master#{i}\n" # our masters are also slaves
+         end 
+       end
 
-       clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n, i|
-         slaves_file << "slave#{i}\n"
+       if clouds[:hadoop_slave]
+         clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n, i|
+           slaves_file << "slave#{i}\n"
+         end
        end
 
        has_file(hadoop_install_dir/:conf/:masters, :content => masters_file)

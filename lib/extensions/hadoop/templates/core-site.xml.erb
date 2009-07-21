@@ -14,7 +14,7 @@
 
 <property>
   <name>fs.default.name</name>
-  <value>hdfs://<%= @node[:poolparty][:current_master] %>:54310</value>
+  <value>hdfs://<%= @node[:poolparty][:current_master] %>:<%= @node[:poolparty][:hadoop_fs_default_port] %></value>
   <description>The name of the default file system.  A URI whose
   scheme and authority determine the FileSystem implementation.  The
   uri's scheme determines the config property (fs.SCHEME.impl) naming
