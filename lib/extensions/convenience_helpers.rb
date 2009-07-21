@@ -50,9 +50,15 @@ module PoolParty
       def add_packages
         has_package "curl"
         has_package "tree"
-        has_package "vim-nox"
-        has_package" screen"
-        has_package" irb"
+        has_package "screen"
+
+        case cloud.os
+        when "centos"
+          has_package "ruby-irb"
+        else
+          has_package "irb"
+          has_package "vim-nox"
+        end
       end
 
       def add_aliases
