@@ -14,6 +14,12 @@ module PoolParty
         end
       end
 
+      def loaded(o={}, &block)
+        do_once do
+          has_file :name => "#{hive_home}/conf/hive-default.xml", :template => "hive-default.xml.erb"
+        end
+      end
+
       def install_from_bin
         has_exec "wget #{hive_dist} -O /usr/local/src/hive-0.3.0-hadoop-0.19.0-dev.tar.gz",
           :not_if => "test -e /usr/local/src/hive-0.3.0-hadoop-0.19.0-dev.tar.gz"
@@ -74,6 +80,20 @@ export PATH=$HADOOP_HOME/bin:$HIVE_HOME/bin:$PATH
         has_exec "#{hadoop_home}/bin/hadoop fs -chmod g+w /user/hive/warehouse", 
           :not_if => "#{hadoop_home}/bin/hadoop fs -ls /user/hive/warehouse",
           :only_if => "test -e #{hadoop_data_dir}/dfs && (ps aux | grep org.apache.hadoop.hdfs.server.namenode.NameNode | grep -v grep)"
+      end
+
+      # you can also pass 'host:port' for host
+      def use_mysql(host, user, pass)
+        has_exec "wget http://mysql.mirrors.pair.com/Downloads/Connector-J/mysql-connector-java-5.0.8.tar.gz -O /usr/local/src/mysql-connector-java-5.0.8.tar.gz", 
+          :not_if => "test -e /usr/local/src/mysql-connector-java-5.0.8.tar.gz"
+        has_exec "cd /usr/local/src && tar -xvvf /usr/local/src/mysql-connector-java-5.0.8.tar.gz", 
+          :not_if => "test -e /usr/local/src/mysql-connector-java-5.0.8"
+        has_exec "mv /usr/local/src/mysql-connector-java-5.0.8/mysql-connector-java-5.0.8-bin.jar #{hive_home}/lib", 
+          :not_if => "test -e #{hive_home}/lib/mysql-connector-java-5.0.8-bin.jar"
+        has_variable :name => "hive_mysql_enabled", :value => "true"
+        has_variable :name => "hive_mysql_host", :value => host
+        has_variable :name => "hive_mysql_user", :value => user
+        has_variable :name => "hive_mysql_pass", :value => pass
       end
 
       private
