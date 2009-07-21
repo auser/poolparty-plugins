@@ -2,6 +2,8 @@
 == Overview
 == Notes
 == Usage
+== Bugs
+Needs some work on determining if these commands need to be run. Ignoring failures for now.
 == References
 =end
 
@@ -20,6 +22,7 @@ module PoolParty
       has_exec(:name => "create-#{name}-database", :command => "/usr/bin/mysqladmin #{permissions_string} create #{name}") do
         # not_if "/usr/bin/mysqlshow #{permissions_string} #{name} | grep -q #{name}"
         not_if "/usr/bin/mysqlshow #{permissions_string} | grep -q #{name}"
+        ignore_failure true
       end
     end
 
@@ -36,6 +39,7 @@ module PoolParty
     def grant_permissions_on_host_for_user(host, user, password)
       has_exec(:name => "create-#{name}-user-#{user}-#{host}", :command => %Q{/usr/bin/mysql #{permissions_string} -e 'grant all privileges on #{name}.* to \\"#{user}\\"@\\"#{host}\\" identified by \\"#{password}\\"'}) do
         not_if %Q{mysql #{permissions_string} -e 'use mysql;select User,Host from user where User=\\"#{user}\\" AND Host=\\"#{host}\\"';}
+        ignore_failure true
       end
     end
 

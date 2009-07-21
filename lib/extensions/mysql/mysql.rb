@@ -36,9 +36,10 @@ module PoolParty
       def root_password(passwd="root_password")
         root_password_string passwd
         pw_string = existing_root_password ? "-p#{existing_root_password}" : ""
-        has_exec(:name => "Change the root password", 
+        has_exec(:name => "Change the root mysql password", 
                  :command => "mysqladmin -uroot #{pw_string} password #{passwd}", 
                  :not_if => "mysqladmin -uroot -p#{passwd} status", 
+                 :ignore_failure => true,
                  :subscribe => [:reload, get_package("mysql-server")])
       end
 
