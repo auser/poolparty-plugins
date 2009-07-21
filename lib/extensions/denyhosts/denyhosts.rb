@@ -44,6 +44,7 @@ module PoolParty
         has_exec({:name => "archive_auth_log", :command => "mv /var/log/auth.log /var/log/auth.log.orig"},
                  :not_if => "test -e /etc/init.d/denyhosts") # if denyhosts isnt already installed
         has_package "denyhosts"
+        has_exec({:name => "make-denyhosts-init.d-script-executable", :command => "chmod +x /etc/init.d/denyhosts"}) # sometimes we may want to shut this off, e.g. when creating an image
         has_service "denyhosts", :enabled => true, :running => true, :supports => [:restart]
         has_exec({:name => "restart-denyhosts", :command => "/etc/init.d/denyhosts restart", :action => :nothing})
       end
