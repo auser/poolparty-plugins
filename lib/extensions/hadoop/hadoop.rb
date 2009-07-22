@@ -91,38 +91,18 @@ module PoolParty
       end
 
       def create_reference_hosts
-        if clouds[:hadoop_master]
-          clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n, i|
-            # has_host(:name => "master#{i}", :ip => n.public_ip)  # todo
-            # my_line_in_file("/etc/hosts", "#{n.public_ip} master#{i}")
-            has_exec "ghost modify master#{i} \`dig +short #{n[:private_dns_name]}\`"
-          end
-        end
-
-        if clouds[:hadoop_slave]
-          clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n, i|
-            # has_host(:name => "slave#{i}", :ip => n.public_ip)  # todo
-            # my_line_in_file("/etc/hosts", "#{n.public_ip} slave#{i}")
-            has_exec "ghost modify slave#{i} \`dig +short #{n[:private_dns_name]}\`"
-          end
+        each_node_with_type_and_index do |n, node_type, i|
+          has_exec "ghost modify #{node_type}#{i} \`dig +short #{n[:private_dns_name]}\`"
         end
       end
 
       def create_ssh_configs
         ssh_config = ""
-
-        if clouds[:hadoop_master]
-          clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n,i| 
-            has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} master#{i} echo || :", :user => user, # verify the host key
-              :only_if => "grep master#{i} /etc/hosts"
-          end 
-        end
-
-        if clouds[:hadoop_slave]
-          clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n,i| 
-            has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} slave#{i} echo || :", :user => user, # verify the host key
-              :only_if => "grep slave#{i} /etc/hosts"
-          end 
+        each_node_with_type_and_index do |n, node_type, i|
+          has_exec "ssh -o 'StrictHostKeyChecking no' -i #{home_dir}/.ssh/#{hadoop_id_rsa_base} #{node_type}#{i} echo", 
+            :user => user, # verify the host key
+            :ignore_failure => true,
+            :only_if => "grep #{node_type}#{i} /etc/hosts"
         end
 
         ssh_config << <<EOF
@@ -181,7 +161,7 @@ EOF
         end
 
 
-        has_variable "block_replication_level", :value => 3 # todo  # huh, this isn't the number of nodes, this is the block replication level
+        has_variable "block_replication_level", :value => 5 # this isn't the number of nodes, this is the block replication level
         # this should be able to be configured in the hadoop config
 
         has_directory hadoop_data_dir, :owner => user, :mode => "755"
@@ -232,8 +212,16 @@ EOF
        set_current_master
 
        %w{datanode tasktracker}.each do |hadoop_role|
-         has_hadoop_service(hadoop_role)
+         self.send("configure_#{hadoop_role}")
        end
+     end
+
+     def configure_tasktracker
+       has_hadoop_service("tasktracker")
+     end
+
+     def configure_datanode
+       has_hadoop_service("datanode")
      end
 
      def has_hadoop_service(hadoop_role) 
@@ -302,18 +290,15 @@ EOF
        masters_file = ""
        slaves_file  = ""
 
-       if clouds[:hadoop_master]
-         clouds[:hadoop_master].nodes(:status => 'running').each_with_index do |n,i| 
-           masters_file << "master#{i}\n"
-           # slaves_file  << "master#{i}\n" # our masters are also slaves
-         end 
+       master_nodes.each_with_index do |n,i| 
+         masters_file << "master#{i}\n"
+       end 
+
+       slave_nodes.each_with_index do |n, i|
+         slaves_file << "slave#{i}\n"
        end
 
-       if clouds[:hadoop_slave]
-         clouds[:hadoop_slave].nodes(:status => 'running').each_with_index do |n, i|
-           slaves_file << "slave#{i}\n"
-         end
-       end
+       # dont need tasktracker nodes here b/c this is for the dfs
 
        has_file(hadoop_install_dir/:conf/:masters, :content => masters_file)
        has_file(hadoop_install_dir/:conf/:slaves,  :content => slaves_file)
@@ -373,6 +358,31 @@ EOF
         has_exec "line_in_#{file}_#{line.safe_quote}" do
           command "grep -q \'#{line.safe_quote}\' #{file} || echo \'#{line.safe_quote}\' >> #{file}"
           not_if "grep -q \'#{line.safe_quote}\' #{file}"
+        end
+      end
+
+      def master_nodes
+        clouds[:hadoop_master].andand.nodes(:status => 'running') || []
+      end
+
+      def slave_nodes
+        clouds[:hadoop_slave].andand.nodes(:status => 'running') || []
+      end
+
+      def tasktracker_nodes
+        clouds[:hadoop_tasktracker].andand.nodes(:status => 'running') || []
+      end
+
+      def node_types
+        %w{master slave tasktracker}
+      end
+
+      # for each node type, yield all the running nodes with an index
+      def each_node_with_type_and_index(&block)
+        node_types.each do |node_type|
+          self.send("#{node_type}_nodes").each_with_index do |n, i|
+            block.call(n, node_type, i)
+          end
         end
       end
       
