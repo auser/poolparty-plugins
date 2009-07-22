@@ -64,6 +64,10 @@ module PoolParty
         %w{interfaces policy rules zones shorewall.conf}.each do |cfg| # todo, load anything relative to the clouds.rb
           has_file :name => "/etc/shorewall/#{cfg}", :mode => "0644", :template => "etc/shorewall/#{cfg}.erb", :calls => get_exec("reload_shorewall_config")
         end
+        has_exec :name => "load_shorewall_first_time", 
+          :command => "echo Loading shorewall...", 
+          :not_if => "iptables -L | grep Shorewall",
+          :calls => get_exec("reload_shorewall_config")
       end
 
       def rule(rule)
