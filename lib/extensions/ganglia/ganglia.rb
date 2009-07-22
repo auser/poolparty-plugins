@@ -143,11 +143,8 @@ module PoolParty
         # has_variable "ganglia_pool_name", :value => (poolname && !poolname.empty? ? poolname : "pool")
         has_variable "ganglia_pool_name", :value => "pool"
 
-        has_file(:name => "/etc/ganglia/gmetad.conf") do
-          mode 0644
-          template "gmetad.conf.erb"
-          # calls get_exec("restart-gmetad")
-        end
+        has_exec(:name => "restart_gmetad2", :command => "/etc/init.d/gmetad restart", :action => :nothing) #  HACK this is already defined!, todo
+        has_file(:name => "/etc/ganglia/gmetad.conf", :mode => 0644, :template => "gmetad.conf.erb", :calls => get_exec("restart_gmetad2"))
         has_service "gmetad", :enabled => true, :running => true, :supports => [:restart]
       end
 
