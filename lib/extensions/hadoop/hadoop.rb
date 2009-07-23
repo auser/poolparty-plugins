@@ -24,6 +24,7 @@ module PoolParty
       def before_load(o={}, &block)
         do_once do
           install_jdk
+          install_dependencies
           # add_users_and_groups
           create_keys
           connect_keys
@@ -49,6 +50,10 @@ module PoolParty
             mode 0644
             template "jvm.conf"
          end
+      end
+
+      def install_dependencies
+        has_package(:name => "dnsutils")
       end
 
       def add_users_and_groups
@@ -92,7 +97,11 @@ module PoolParty
 
       def create_reference_hosts
         each_node_with_type_and_index do |n, node_type, i|
-          has_exec "ghost modify #{node_type}#{i} \`dig +short #{n[:private_dns_name]}\`"
+          if n[:private_dns_name]
+            has_exec "ghost modify #{node_type}#{i} \`dig +short #{n[:private_dns_name]}\`"
+          else
+            has_exec "ghost modify #{node_type}#{i} #{n[:ip]}"
+          end
         end
       end
 
@@ -125,30 +134,51 @@ EOF
         has_exec "wget http://www.gossipcheck.com/mirrors/apache/hadoop/core/hadoop-0.20.0/hadoop-0.20.0.tar.gz -O /usr/local/src/hadoop-0.20.0.tar.gz", 
           :not_if => "test -e /usr/local/src/hadoop-0.20.0.tar.gz"
         has_exec "cd /usr/local/src && tar -xzf hadoop-0.20.0.tar.gz",
-          :not_if => "test -e #{hadoop_install_dir}"
+          :not_if => "test -e /usr/local/src/hadoop"
         has_exec "mv /usr/local/src/hadoop-0.20.0 /usr/local/src/hadoop",
-          :not_if => "test -e #{hadoop_install_dir}"
+          :not_if => "test -e /usr/local/src/hadoop/hadoop-0.20.0-core.jar"
         has_exec "chown -R #{user}:#{group} /usr/local/src/hadoop",
           :not_if => "test -e #{hadoop_install_dir}"
+        build_src
         has_exec "mv /usr/local/src/hadoop #{hadoop_install_dir}",
           :not_if => "test -e #{hadoop_install_dir}"
-        # apply https://issues.apache.org/jira/secure/attachment/12407207/HADOOP-4675-v7.patch for ganglia 3.1 support
       end
 
       def build_src
-        # TODO build from source so we can apply patches.
-        # export JAVA_HOME=/usr/lib/jvm/java-6-sun
+        has_directory "/usr/local/src/hadoop/orig"
+        has_exec "cp /usr/local/src/hadoop/hadoop-0.20.0-core.jar /usr/local/src/hadoop/orig/hadoop-0.20.0-core.jar",
+          :not_if => "test -e /usr/local/src/hadoop/orig/hadoop-0.20.0-core.jar"
+
+        has_package "ant"
+        has_package "zlib1g-dev"
+        has_directory "/usr/local/src/hadoop/patches"
+
+        # get whatever patches you want here
+        has_wget("https://issues.apache.org/jira/secure/attachment/12407207/HADOOP-4675-v7.patch", "/usr/local/src/hadoop/patches/0001-ganglia31-HADOOP-4675-v7.patch")
+
+        # apply them
+        has_exec "cd /usr/local/src/hadoop && for PATCH in `find patches -type f | grep -v applied`; do (patch -p0 < ${PATCH}); mv ${PATCH} ${PATCH}.applied ; done"
+
+        # probably need to restart hadoop somewhere here
+
+        has_exec :name => "upgrade-core-hadoop-jar", 
+          # :command => "cp /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar /usr/local/src/hadoop/hadoop-0.20.0-core.jar", 
+          :command => "cp -f /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar #{hadoop_install_dir}/hadoop-0.20.0-core.jar", 
+          :action => :nothing
+
+        has_exec "export JAVA_HOME=/usr/lib/jvm/java-6-sun && cd /usr/local/src/hadoop && ant jar", 
+          :not_if => "test -e /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar",
+          :calls => get_exec("upgrade-core-hadoop-jar")
       end
 
       def hadoop_install_dir
         "/usr/local/hadoop"
       end
 
-      def set_current_master(hostname="master0", port="54310")
-        unless @hadoop_set_current_master
-          has_variable "current_master", :value => hostname # todo, could eventually be made more dynamic here
-          has_variable "hadoop_fs_default_port", :value => port # todo, could eventually be made more dynamic here
-          @hadoop_set_current_master = true
+      def set_current_master(master_hostname="master0", port="54310")
+        do_once do
+          has_variable :name => "current_master", :value => master_hostname # todo, could eventually be made more dynamic here
+          has_variable :name => "hadoop_fs_default_port", :value => port # todo, could eventually be made more dynamic here
         end
       end
 
@@ -217,10 +247,12 @@ EOF
      end
 
      def configure_tasktracker
+       set_current_master
        has_hadoop_service("tasktracker")
      end
 
      def configure_datanode
+       set_current_master
        has_hadoop_service("datanode")
      end
 
@@ -384,6 +416,10 @@ EOF
             block.call(n, node_type, i)
           end
         end
+      end
+
+      def has_wget(source_url, location)
+        has_exec "wget --no-check-certificate #{source_url} -O #{location}", :not_if => "test -e #{location}"
       end
       
     end
