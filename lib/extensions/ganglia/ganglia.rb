@@ -129,9 +129,10 @@ module PoolParty
         @monitored_clouds.each do |cloud_name|
           line = "data_source \\\"#{cloud_name}\\\" "
           ips = []
-          clouds[cloud_name.intern].nodes(:status => 'running').each_with_index do |n, i|
-            # todo - what if we used master0, slave0 etc here?
-            ips << n[:private_dns_name] + ":8649"
+          if clouds[cloud_name.intern]
+            clouds[cloud_name.intern].nodes(:status => 'running').each_with_index do |n, i|
+              ips << (n[:private_dns_name] || n[:ip]) + ":8649" # todo - what if we used master0, slave0 etc here?
+            end
           end
           data_sources << (line + ips.join(" ") + "\n")
         end
