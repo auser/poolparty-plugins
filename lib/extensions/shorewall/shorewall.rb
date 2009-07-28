@@ -38,8 +38,8 @@ You may ask, "Why do we need a firewall when EC2 already provides one?" The answ
 
 
 module PoolParty
-  module Plugin
-    class Shorewall < Plugin
+  module Resources
+    class Shorewall < Resource
 
       def before_load(o={}, &block)
         @rules = []
@@ -62,7 +62,11 @@ module PoolParty
         has_exec :name => "reload_shorewall_config", :command => "/sbin/shorewall try /etc/shorewall", :action => :nothing
         has_variable "shorewall_rules", :value => (@rules.join("\n") || "#")
         %w{interfaces policy rules zones shorewall.conf}.each do |cfg| # todo, load anything relative to the clouds.rb
-          has_file :name => "/etc/shorewall/#{cfg}", :mode => "0644", :template => "etc/shorewall/#{cfg}.erb", :calls => get_exec("reload_shorewall_config")
+          has_file "/etc/shorewall/#{cfg}" do
+            mode "0644"
+            template "etc/shorewall/#{cfg}.erb"
+            notifes get_exec("reload_shorewall_config"), :run
+          end
         end
         has_exec :name => "load_shorewall_first_time", 
           :command => "echo Loading shorewall...", 

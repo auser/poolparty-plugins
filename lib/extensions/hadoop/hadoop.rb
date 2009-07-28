@@ -19,8 +19,9 @@ This assumes your clouds are named "hadoop_master" and "hadoop_slave". That suck
 
 
 module PoolParty
-  module Plugin
-    class Hadoop < Plugin
+  module Resources
+    class Hadoop < Resource
+      
       def before_load(o={}, &block)
         do_once do
           install_jdk
@@ -48,7 +49,7 @@ module PoolParty
         has_package(:name => "sun-java6-jdk")
         has_file(:name => "/etc/jvm") do
             mode 0644
-            template "jvm.conf"
+            template File.dirname(__FILE__)+"/templates/jvm.conf"
          end
       end
 
@@ -166,9 +167,10 @@ EOF
           :command => "cp -f /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar #{hadoop_install_dir}/hadoop-0.20.0-core.jar", 
           :action => :nothing
 
-        has_exec "export JAVA_HOME=/usr/lib/jvm/java-6-sun && cd /usr/local/src/hadoop && ant jar", 
-          :not_if => "test -e /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar",
-          :calls => get_exec("upgrade-core-hadoop-jar")
+        has_exec "export JAVA_HOME=/usr/lib/jvm/java-6-sun && cd /usr/local/src/hadoop && ant jar" do
+          not_if "test -e /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar"
+          notifies get_exec("upgrade-core-hadoop-jar"), :run
+        end
       end
 
       def hadoop_install_dir
@@ -353,7 +355,7 @@ EOF
 
       private
       def cloud_keys_dir
-        File.dirname(pool_specfile)/:keys
+        '/Users/mfairchild/Code/poolparty-examples/hadoop'/:keys
       end
 
       def hadoop_id_rsa
@@ -394,15 +396,16 @@ EOF
       end
 
       def master_nodes
-        clouds[:hadoop_master].andand.nodes(:status => 'running') || []
+        clouds['hadoop_master'].nodes(:status => 'running') || []
       end
 
       def slave_nodes
-        clouds[:hadoop_slave].andand.nodes(:status => 'running') || []
+        clouds['hadoop_slave'].nodes(:status => 'running') || []
       end
 
       def tasktracker_nodes
-        clouds[:hadoop_tasktracker].andand.nodes(:status => 'running') || []
+        []
+        # clouds['hadoop_tasktracker'].nodes(:status => 'running') || []
       end
 
       def node_types

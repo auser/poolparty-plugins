@@ -29,8 +29,8 @@ then rm it when done. This may cause problems when nodes provision each other.
 
 
 module PoolParty
-  module Plugin
-    class Tripwire < Plugin
+  module Resources
+    class Tripwire < Resource
       dsl_methods :root_dir,
                   :mailto
 

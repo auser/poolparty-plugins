@@ -14,8 +14,8 @@ developing an internal or forked gem and you want to deploy it to your cloud
 =end
 
 module PoolParty
-  module Plugin
-    class DevelopmentGem < Plugin
+  module Resources
+    class DevelopmentGem < Resource
  
       dsl_methods :name,            # Name of the gem
                   :from,            # The *local* path to the src of the gem being deployed

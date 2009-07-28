@@ -7,8 +7,8 @@
 =end
 
 module PoolParty
-  module Plugin
-    class Mysql < Plugin
+  module Resources
+    class Mysql < Resource
       dsl_methods :root_password_string,
                   :existing_root_password
 
@@ -22,7 +22,10 @@ module PoolParty
         has_exec(:name => "reload-mysql", :command => "/etc/init.d/mysql reload", :action => :nothing)
         has_package(:name => "mysql-server")
         has_service(:name => "mysql", :requires => get_package("mysql-server"))
-        has_file(:name => "/etc/mysql/conf.d/networked.cnf", :content => "[mysqld]\nbind-address    = 0.0.0.0", :calls => get_exec("restart-mysql"))
+        has_file "/etc/mysql/conf.d/networked.cnf" do
+          content "[mysqld]\nbind-address    = 0.0.0.0"
+          notifies get_exec("restart-mysql"), :run
+        end
       end
 
       def slave

@@ -7,7 +7,7 @@ Install Ganglia cloud monitoring system
 You'll need apache and php enabled in your clouds.rb. For example:
 
     apache do
-      enable_php5 do
+      has_php do
         extras :gd
       end
     end
@@ -17,7 +17,7 @@ launched, you must setup an after_all_loaded block in your clouds.rb that calls
 ganglia.perform_after_all_loaded_for_master. For example:
 
   after_all_loaded do
-    clouds[:hadoop_master].run_in_context do
+    clouds['hadoop_master'].run_in_context do
       ganglia.perform_after_all_loaded_for_master
     end
   end
@@ -38,8 +38,8 @@ ec2-authorize -P tcp -p 8649 nmurray-hadoop
 =end
 
 module PoolParty
-  module Plugin
-    class Ganglia < Plugin
+  module Resources
+    class Ganglia < Resource
       def before_load(o={}, &block)
         @monitored_features ||= {}
         do_once do
@@ -95,7 +95,7 @@ module PoolParty
         has_file(:name => "/etc/init.d/gmond") do
           mode 0755
           template :bin/"gmond.erb"
-          calls get_exec("restart-gmond")
+          notifies get_exec("restart-gmond"), :run
         end
 
         install_extra_gmond_monitors
@@ -109,7 +109,7 @@ module PoolParty
         has_file(:name => "/etc/init.d/gmetad") do
           mode 0755
           template :bin/"gmetad.erb"
-          calls get_exec("restart-gmetad")
+          notifies get_exec("restart-gmetad"), :run
         end
       end
 
@@ -129,8 +129,8 @@ module PoolParty
         @monitored_clouds.each do |cloud_name|
           line = "data_source \\\"#{cloud_name}\\\" "
           ips = []
-          if clouds[cloud_name.intern]
-            clouds[cloud_name.intern].nodes(:status => 'running').each_with_index do |n, i|
+          if clouds[cloud.name]
+            clouds[cloud.name].nodes(:status => 'running').each_with_index do |n, i|
               ips << (n[:private_dns_name] || n[:ip]) + ":8649" # todo - what if we used master0, slave0 etc here?
             end
           end
@@ -145,7 +145,11 @@ module PoolParty
         has_variable "ganglia_pool_name", :value => "pool"
 
         has_exec(:name => "restart_gmetad2", :command => "/etc/init.d/gmetad restart", :action => :nothing) #  HACK this is already defined!, todo
-        has_file(:name => "/etc/ganglia/gmetad.conf", :mode => 0644, :template => "gmetad.conf.erb", :calls => get_exec("restart_gmetad2"))
+        has_file "/etc/ganglia/gmetad.conf" do
+          mode 644
+          template "gmetad.conf.erb"
+          notifies get_exec("restart_gmetad2"), :run
+        end
         has_service "gmetad", :enabled => true, :running => true, :supports => [:restart]
       end
 
@@ -155,11 +159,11 @@ module PoolParty
       end
 
       def gmond_after_all_loaded
-        has_variable "ganglia_cloud_name", :value => cloud_name 
+        has_variable "ganglia_cloud_name", :value => cloud.name
         has_variable "ganglia_this_nodes_private_ip", :value => lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}}
         has_variable "ganglia_masters_ip", :value => lambda { %Q{\`ping -c1  master0 | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
-        first_node = clouds[cloud_name].nodes(:status => 'running').first
+        first_node = clouds[cloud.name].nodes(:status => 'running').first
 
 
         if first_node

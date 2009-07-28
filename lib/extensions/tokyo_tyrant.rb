@@ -5,8 +5,8 @@
       enable :tokyo_tyrant
 =end
 module PoolParty
-  module Plugin
-    class TokyoTyrant < Plugin
+  module Resources
+    class TokyoTyrant < Resource
       
       def enable
         has_package "build-essential"
