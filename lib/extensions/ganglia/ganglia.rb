@@ -95,7 +95,7 @@ module PoolParty
         has_file(:name => "/etc/init.d/gmond") do
           mode 0755
           template :bin/"gmond.erb"
-          calls get_exec("restart-gmond")
+          notifies get_exec("restart-gmond"), :run
         end
 
         install_extra_gmond_monitors
@@ -109,7 +109,7 @@ module PoolParty
         has_file(:name => "/etc/init.d/gmetad") do
           mode 0755
           template :bin/"gmetad.erb"
-          calls get_exec("restart-gmetad")
+          notifies get_exec("restart-gmetad"), :run
         end
       end
 
@@ -145,7 +145,9 @@ module PoolParty
         has_variable "ganglia_pool_name", :value => "pool"
 
         has_exec(:name => "restart_gmetad2", :command => "/etc/init.d/gmetad restart", :action => :nothing) #  HACK this is already defined!, todo
-        has_file(:name => "/etc/ganglia/gmetad.conf", :mode => 0644, :template => "gmetad.conf.erb", :calls => get_exec("restart_gmetad2"))
+        has_file(:name => "/etc/ganglia/gmetad.conf", :mode => 0644, :template => "gmetad.conf.erb" do
+          notifies get_exec("restart_gmetad2"), :run
+        end
         has_service "gmetad", :enabled => true, :running => true, :supports => [:restart]
       end
 
@@ -168,7 +170,7 @@ module PoolParty
           has_file(:name => "/etc/ganglia/gmond.conf") do
             mode 0644
             template "gmond.conf.erb"
-            # calls get_exec("restart-gmond")
+            # notifies get_exec("restart-gmond"), :run
           end
 
           enable_tracking_configs

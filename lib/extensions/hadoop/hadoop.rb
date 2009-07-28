@@ -166,9 +166,9 @@ EOF
           :command => "cp -f /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar #{hadoop_install_dir}/hadoop-0.20.0-core.jar", 
           :action => :nothing
 
-        has_exec "export JAVA_HOME=/usr/lib/jvm/java-6-sun && cd /usr/local/src/hadoop && ant jar", 
-          :not_if => "test -e /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar",
-          :calls => get_exec("upgrade-core-hadoop-jar")
+        has_exec "export JAVA_HOME=/usr/lib/jvm/java-6-sun && cd /usr/local/src/hadoop && ant jar" do
+          not_if "test -e /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar"
+          notifies get_exec("upgrade-core-hadoop-jar"), :run
       end
 
       def hadoop_install_dir
