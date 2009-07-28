@@ -188,7 +188,7 @@ EOF
         has_gem_package("bjeanes-ghost")
 
         has_file(:name => hadoop_install_dir/"conf/hadoop-env.sh") do
-          mode 0644
+          mode 644
           template "hadoop-env.sh"
         end
 
@@ -355,7 +355,7 @@ EOF
 
       private
       def cloud_keys_dir
-        '/Users/mfairchild/Code/poolparty-examples/hadoop'/:keys
+        "#{Dir.pwd}"/:keys
       end
 
       def hadoop_id_rsa

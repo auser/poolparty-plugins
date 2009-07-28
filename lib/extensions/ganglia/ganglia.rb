@@ -114,7 +114,11 @@ module PoolParty
       end
 
       def monitor(*cloud_names)
-        @monitored_clouds = cloud_names
+        monitored_clouds << cloud_names
+      end
+      
+      def monitored_clouds
+        @monitored_clouds ||= []
       end
 
       def perform_after_all_loaded_for_slave
