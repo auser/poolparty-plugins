@@ -162,14 +162,16 @@ EOF
 
         # probably need to restart hadoop somewhere here
 
-        has_exec :name => "upgrade-core-hadoop-jar", 
+        has_exec "upgrade-core-hadoop-jar" do
           # :command => "cp /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar /usr/local/src/hadoop/hadoop-0.20.0-core.jar", 
-          :command => "cp -f /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar #{hadoop_install_dir}/hadoop-0.20.0-core.jar", 
-          :action => :nothing
+          command "cp -f /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar #{hadoop_install_dir}/hadoop-0.20.0-core.jar"
+          action :nothing
+        end
 
         has_exec "export JAVA_HOME=/usr/lib/jvm/java-6-sun && cd /usr/local/src/hadoop && ant jar" do
           not_if "test -e /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar"
           notifies get_exec("upgrade-core-hadoop-jar"), :run
+          action :nothing
         end
       end
 
@@ -179,8 +181,8 @@ EOF
 
       def set_current_master(master_hostname="master0", port="54310")
         do_once do
-          has_variable :name => "current_master", :value => master_hostname # todo, could eventually be made more dynamic here
-          has_variable :name => "hadoop_fs_default_port", :value => port # todo, could eventually be made more dynamic here
+          has_variable "current_master", master_hostname # todo, could eventually be made more dynamic here
+          has_variable "hadoop_fs_default_port", port # todo, could eventually be made more dynamic here
         end
       end
 
@@ -193,7 +195,7 @@ EOF
         end
 
 
-        has_variable "block_replication_level", :value => 5 # this isn't the number of nodes, this is the block replication level
+        has_variable "block_replication_level", 5 # this isn't the number of nodes, this is the block replication level
         # this should be able to be configured in the hadoop config
 
         has_directory hadoop_data_dir, :owner => user, :mode => "755"
@@ -208,10 +210,11 @@ EOF
           has_directory hadoop_data_dir/:temp/:mapred/folder, :owner => user, :mode => "755"
         end
 
-        has_variable "hadoop_data_dir",   :value => hadoop_data_dir
-        has_variable "hadoop_mapred_dir", :value => hadoop_data_dir/:mapred
-
-        has_variable("hadoop_this_nodes_ip", :value => lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}})
+        has_variable "hadoop_data_dir",   hadoop_data_dir
+        has_variable "hadoop_mapred_dir", hadoop_data_dir/:mapred
+        
+        has_variable("hadoop_this_nodes_hostname", "<%= instance.dns_name %>")
+        has_variable("hadoop_this_nodes_ip", "<%= instance.public_ip %>")
 
         %w{core hdfs mapred}.each do |config|
           has_file(:name => hadoop_install_dir/"conf/#{config}-site.xml") do
@@ -324,11 +327,11 @@ EOF
        masters_file = ""
        slaves_file  = ""
 
-       master_nodes.each_with_index do |n,i| 
+       clouds['hadoop_master'].nodes.each_with_index do |n,i| 
          masters_file << "master#{i}\n"
        end 
 
-       slave_nodes.each_with_index do |n, i|
+       clouds['hadoop_slave'].each_with_index do |n, i|
          slaves_file << "slave#{i}\n"
        end
 
@@ -404,8 +407,7 @@ EOF
       end
 
       def tasktracker_nodes
-        []
-        # clouds['hadoop_tasktracker'].nodes(:status => 'running') || []
+        clouds['hadoop_tasktracker'].nodes(:status => 'running') || []
       end
 
       def node_types

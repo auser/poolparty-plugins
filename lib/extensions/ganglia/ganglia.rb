@@ -76,7 +76,7 @@ module PoolParty
         has_exec "mv /usr/local/src/ganglia-3.1.2/web /var/www/ganglia",
           :not_if => "test -e /var/www/ganglia"
         has_file :name => "/var/www/ganglia/conf.php", :mode => "0644", :template => "ganglia-web-conf.php.erb"
-        has_variable "ganglia_gmond_is_master", :value => true
+        has_variable "ganglia_gmond_is_master", true
         gmond
         gmetad
       end
@@ -84,7 +84,7 @@ module PoolParty
       def slave
         has_exec "cd /usr/local/src/ganglia-3.1.2 && ./configure && make && make install",
           :not_if => "test -e /usr/lib/ganglia"
-        has_variable "ganglia_gmond_is_master", :value => false
+        has_variable "ganglia_gmond_is_master", false
         gmond
       end
 
@@ -142,11 +142,11 @@ module PoolParty
         end
         data_sources.gsub!(/\n/, '\n')
 
-        has_variable "ganglia_gmetad_data_sources", :value => data_sources
+        has_variable "ganglia_gmetad_data_sources", data_sources
 
         # poolname = clouds.values.first.pool.name
         # has_variable "ganglia_pool_name", :value => (poolname && !poolname.empty? ? poolname : "pool")
-        has_variable "ganglia_pool_name", :value => "pool"
+        has_variable "ganglia_pool_name", "pool"
 
         has_exec(:name => "restart_gmetad2", :command => "/etc/init.d/gmetad restart", :action => :nothing) #  HACK this is already defined!, todo
         has_file "/etc/ganglia/gmetad.conf" do
@@ -163,15 +163,15 @@ module PoolParty
       end
 
       def gmond_after_all_loaded
-        has_variable "ganglia_cloud_name", :value => cloud.name
-        has_variable "ganglia_this_nodes_private_ip", :value => lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}}
-        has_variable "ganglia_masters_ip", :value => lambda { %Q{\`ping -c1  master0 | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
+        has_variable "ganglia_cloud_name", cloud.name
+        has_variable "ganglia_this_nodes_private_ip", lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}}
+        has_variable "ganglia_masters_ip", lambda { %Q{\`ping -c1  master0 | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
         first_node = clouds[cloud.name].nodes(:status => 'running').first
 
 
         if first_node
-          has_variable "ganglia_first_node_in_clusters_ip", :value => lambda { %Q{\`ping -c1  #{first_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
+          has_variable "ganglia_first_node_in_clusters_ip", lambda { %Q{\`ping -c1  #{first_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
           has_file(:name => "/etc/ganglia/gmond.conf") do
             mode 0644
@@ -188,7 +188,7 @@ module PoolParty
 
       def enable_tracking_configs
         if @monitored_features[:hadoop]
-          has_variable "hadoop_ganglia_monitoring_enabled", :value => true
+          has_variable "hadoop_ganglia_monitoring_enabled", true
           
           # hmm, should maybe be mvd to hadoop plugin?
           has_file(:name => "/usr/local/hadoop/conf/hadoop-metrics.properties") do

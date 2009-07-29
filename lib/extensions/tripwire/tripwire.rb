@@ -51,10 +51,10 @@ module PoolParty
       end
 
       def smtp_settings host, username, password, port=25
-        has_variable "tripwire_smtp_settings", :value => true
+        has_variable "tripwire_smtp_settings", true
         @smtp_settings ||= {:host => host, :username => username, :password => password, :port => port}
         %w{host username password port}.each do |setting|
-          has_variable "tripwire_smtp_#{setting}", :value => eval(setting)
+          has_variable "tripwire_smtp_#{setting}", eval(setting)
         end
       end
 
