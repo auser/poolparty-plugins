@@ -7,7 +7,7 @@
 
 <property>
   <name>mapred.job.tracker</name>
-  <value><%= @node[:poolparty][:current_master] %>:54311</value>
+  <value><%= @node[:hadoop][:current_master] %>:54311</value>
   <description>The host and port that the MapReduce job tracker runs
   at.  If "local", then jobs are run in-process as a single map
   and reduce task.
@@ -17,7 +17,7 @@
 
 <property>
   <name>mapred.task.tracker.report.address</name>
-  <value><%= @node[:poolparty][:hadoop_this_nodes_ip] %>:0</value>
+  <value><%= @node[:hadoop][:hadoop_this_nodes_ip] %>:0</value>
   <description>The interface and port that task tracker server listens on.
   Since it is only connected to by the tasks, it uses the local interface.
   EXPERT ONLY. Should only be changed if your host does not have the loopback
@@ -26,12 +26,12 @@
 
 <property>
   <name>mapred.local.dir</name>
-  <value><%= @node[:poolparty][:hadoop_data_dir] %>/mapred/local</value>
+  <value><%= @node[:hadoop][:hadoop_data_dir] %>/mapred/local</value>
 </property>
 
 <property>
   <name>mapred.system.dir</name>
-  <value><%= @node[:poolparty][:hadoop_data_dir] %>/mapred/system</value>
+  <value><%= @node[:hadoop][:hadoop_data_dir] %>/mapred/system</value>
 </property>
 
 <property>

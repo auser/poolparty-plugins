@@ -45,7 +45,7 @@ module PoolParty
         @rules = []
       end
 
-      def loaded(o={}, &block)
+      def after_loaded(o={}, &block)
         do_once do
           install
           configure
@@ -65,7 +65,7 @@ module PoolParty
           has_file "/etc/shorewall/#{cfg}" do
             mode "0644"
             template "etc/shorewall/#{cfg}.erb"
-            notifes get_exec("reload_shorewall_config"), :run
+            notifies get_exec("reload_shorewall_config"), :run
           end
         end
         has_exec :name => "load_shorewall_first_time", 

@@ -85,7 +85,7 @@ TWSYSLOG=true
 #####################################
 
 
-<% if @node[:poolparty][:tripwire_smtp_settings] %>
+<% if @node[:tripwire][:tripwire_smtp_settings] %>
 #####################################
 # SMTP options
 #
@@ -93,8 +93,8 @@ TWSYSLOG=true
 # SMTPPORT selects the SMTP port for the SMTP mail program to use.
 #####################################
 TWMAILMETHOD=SMTP
-TWSMTPHOST=<%= @node[:poolparty][:tripwire_smtp_host] %>
-TWSMTPPORT=<%= @node[:poolparty][:tripwire_smtp_port] %>
+TWSMTPHOST=<%= @node[:tripwire][:tripwire_smtp_host] %>
+TWSMTPPORT=<%= @node[:tripwire][:tripwire_smtp_port] %>
 <% else  %>
 TWMAILMETHOD=SENDMAIL
 # If sendmail wasn't found in the path, set then clear out 

@@ -79,6 +79,9 @@ module PoolParty
         has_variable "ganglia_gmond_is_master", true
         gmond
         gmetad
+        
+        # 
+        perform_after_all_loaded_for_master
       end
 
       def slave
@@ -86,6 +89,8 @@ module PoolParty
           :not_if => "test -e /usr/lib/ganglia"
         has_variable "ganglia_gmond_is_master", false
         gmond
+        # 
+        perform_after_all_loaded_for_slave
       end
 
       def gmond

@@ -192,23 +192,23 @@
 </property>
 
 
-<% if @node[:poolparty][:hive_mysql_enabled] %>
+<% if @node[:hadoop][:hive_mysql_enabled] %>
 
     <property>
       <name>javax.jdo.option.ConnectionURL</name>
-      <value>jdbc:mysql://<%= @node[:poolparty][:hive_mysql_host] %>/metastore_db?createDatabaseIfNotExist=true</value>
+      <value>jdbc:mysql://<%= @node[:hadoop][:hive_mysql_host] %>/metastore_db?createDatabaseIfNotExist=true</value>
       <description>JDBC connect string for a JDBC metastore</description>
     </property>
 
     <property>
       <name>javax.jdo.option.ConnectionUserName</name>
-      <value><%= @node[:poolparty][:hive_mysql_user] %></value>
+      <value><%= @node[:hadoop][:hive_mysql_user] %></value>
       <description>MySQL username</description>
     </property>
 
     <property>
       <name>javax.jdo.option.ConnectionPassword</name>
-      <value><%= @node[:poolparty][:hive_mysql_pass] %></value>
+      <value><%= @node[:hadoop][:hive_mysql_pass] %></value>
       <description>MySQL password</description>
     </property>
 
