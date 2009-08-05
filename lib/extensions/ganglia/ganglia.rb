@@ -181,7 +181,7 @@ module PoolParty
           has_file(:name => "/etc/ganglia/gmond.conf") do
             mode 0644
             template "gmond.conf.erb"
-            # calls get_exec("restart-gmond")
+            # notifies get_exec("restart-gmond"), :run
           end
 
           enable_tracking_configs

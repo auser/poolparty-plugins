@@ -68,10 +68,9 @@ module PoolParty
             notifies get_exec("reload_shorewall_config"), :run
           end
         end
-        has_exec :name => "load_shorewall_first_time", 
-          :command => "echo Loading shorewall...", 
-          :not_if => "iptables -L | grep Shorewall",
-          :calls => get_exec("reload_shorewall_config")
+        has_exec :name => "load_shorewall_first_time", :command => "echo Loading shorewall..." do
+          not_if "iptables -L | grep Shorewall"
+          notifies get_exec("reload_shorewall_config"), :run
       end
 
       def rule(rule)
