@@ -27,8 +27,8 @@
 
 
 module PoolParty
-  module Plugin
-    class Denyhosts < Plugin
+  module Resources
+    class Denyhosts < Resource
 
       def loaded(o={}, &block)
         do_once do
@@ -50,7 +50,11 @@ module PoolParty
       end
 
       def configure
-        has_file :name => "/etc/denyhosts.conf", :mode => "0644", :template => "denyhosts.conf.erb", :calls => get_exec("restart-denyhosts")
+        has_file "/etc/denyhosts.conf" do
+          mode "0644"
+          template "denyhosts.conf.erb"
+          notifies get_exec("restart-denyhosts"), :run
+        end
       end
 
     end

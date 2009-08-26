@@ -29,18 +29,19 @@ then rm it when done. This may cause problems when nodes provision each other.
 
 
 module PoolParty
-  module Plugin
-    class Tripwire < Plugin
+  module Resources
+    class Tripwire < Resource
       dsl_methods :root_dir,
                   :mailto
 
-      def loaded(o={}, &block)
+      def after_loaded(o={}, &block)
         do_once do
           install_from_src
         end
       end
 
       def install_from_src
+        base_requirements
         install_dependencies
         download
         password_file
@@ -51,44 +52,65 @@ module PoolParty
       end
 
       def smtp_settings host, username, password, port=25
-        has_variable "tripwire_smtp_settings", :value => true
+        has_variable "tripwire_smtp_settings", true
         @smtp_settings ||= {:host => host, :username => username, :password => password, :port => port}
         %w{host username password port}.each do |setting|
-          has_variable "tripwire_smtp_#{setting}", :value => eval(setting)
+          has_variable "tripwire_smtp_#{setting}", eval(setting)
         end
       end
 
       private
+      def base_requirements
+        has_directory src_dir
+        has_directory "/tmp"
+      end
+      
       def install_dependencies
         has_package "expect"
       end
 
       def download
-        has_exec "wget http://softlayer.dl.sourceforge.net/sourceforge/tripwire/tripwire-2.4.1.2-src.tar.bz2 -O /usr/local/src/tripwire-2.4.1.2-src.tar.bz2",
+        has_exec "download_tripwire",
+          :command => "wget http://softlayer.dl.sourceforge.net/sourceforge/tripwire/tripwire-2.4.1.2-src.tar.bz2 -O /usr/local/src/tripwire-2.4.1.2-src.tar.bz2",
           :not_if => "test -e /usr/local/src/tripwire-2.4.1.2-src.tar.bz2"
-        has_exec "cd /usr/local/src && tar -xvvf /usr/local/src/tripwire-2.4.1.2-src.tar.bz2",
-          :not_if => "test -d #{tripwire_src}"
+          
+        has_exec "unpack_tripwire",
+          :command => "cd /usr/local/src && tar -xvvf /usr/local/src/tripwire-2.4.1.2-src.tar.bz2",
+          :not_if => "test -d #{tripwire_src}",
+          :requires => get_exec("download_tripwire")
       end
 
       def configure_and_build
         raise "tripwire requires a root_dir to be specified. Try using the `root_dir` directive to specify an arbitrary directory to install tripwire in" unless root_dir
         has_directory root_dir
-        has_exec "cd #{tripwire_src} && ./configure --prefix=#{root_dir}",
+        has_exec "configure_tripwire",
+          :command => "cd #{tripwire_src} && ./configure --prefix=#{root_dir}",
+          :requires => get_exec("unpack_tripwire"),
           :not_if => "test -e #{tripwire_src}/Makefile"
-        has_exec "cd #{tripwire_src} && make",
+          
+        has_exec "make_tripwire",
+          :command => "cd #{tripwire_src} && make",
+          :requires => get_exec("configure_tripwire"),
           :not_if => "test -e #{tripwire_src}/bin/tripwire"
-        has_file :name => "#{tripwire_src}/install/install.cfg", :mode => "0644", :template => "install.cfg.erb"
-        has_file :name => "#{tripwire_src}/make-install-tripwire.tcl", :mode => "0755", :template => "make-install-tripwire.tcl.erb"
+          
+        has_file :name => "#{tripwire_src}/install/install.cfg", :mode => "0644", :template => "install.cfg.erb" do
+          requires get_exec("make_tripwire")
+        end
+        has_file :name => "#{tripwire_src}/make-install-tripwire.tcl", :mode => "0755", :template => "make-install-tripwire.tcl.erb" do
+          requires get_exec("make_tripwire")
+        end
 
 
 
         # TODO ----------- this is a huge security hole b/c it leaves the
         # password all over the place. todo figure this one out
-        has_exec "cd #{tripwire_src} && /usr/bin/expect make-install-tripwire.tcl #{site_password_unix_line} #{local_password_unix_line}",
-          :not_if => "test -e #{root_dir}/etc/tw.cfg"
+        has_exec "touch_password",
+          :not_if => "test -e #{root_dir}/etc/tw.cfg",
+          :command => "cd #{tripwire_src} && /usr/bin/expect make-install-tripwire.tcl #{site_password_unix_line} #{local_password_unix_line}",
+          :requires => get_exec("make_tripwire")
 
-        has_file :name => "#{root_dir}/etc/twcfg.txt", :mode => "0644", :template => "twcfg.txt.erb"
-        has_file :name => "#{root_dir}/etc/twpol.txt", :mode => "0644", :template => "twpol.txt.erb"
+        has_file :name => "#{root_dir}/etc/twcfg.txt", :mode => "0644", :template => "twcfg.txt.erb", :requires => get_exec("make_tripwire")
+        has_file :name => "#{root_dir}/etc/twpol.txt", :mode => "0644", :template => "twpol.txt.erb", :requires => get_exec("make_tripwire")
       end
 
       def write_policy
@@ -98,7 +120,8 @@ module PoolParty
 
       def initialize_database
         has_exec "cd #{root_dir} && echo #{local_password_unix_line} | ./sbin/tripwire --init",
-          :not_if => "test -e #{root_dir}/lib/tripwire/\`hostname\`.twd" 
+          :not_if => "test -e #{root_dir}/lib/tripwire/\`hostname\`.twd",
+          :requires => get_exec("make_tripwire")
       end
 
       def src_dir
@@ -132,10 +155,10 @@ module PoolParty
       end
 
       def password_file
-        users_template = File.expand_path(File.dirname(pool_specfile)/:templates/:tripwire/"tripwire_passwords")
+        users_template = File.expand_path(File.dirname(clouds_dot_rb_file)/:templates/:tripwire/"tripwire_passwords")
         unless File.exists?(users_template)
           puts "***** WARNING #{users_template} does not exist. This is required to use the tripwire plugin. the format is the site password on the first line and local password in the second"
-        end
+        end        
         has_file :name => "/tmp/tripwire_password", :mode => "0644", :template => users_template
       end
 

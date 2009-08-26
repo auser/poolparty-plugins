@@ -7,14 +7,14 @@
  
 <property>
   <name>hadoop.tmp.dir</name>
-  <!--<value><%= @node[:poolparty][:hadoop_data_dir] %>/hadoop-${user.name}</value> -->
-  <value><%= @node[:poolparty][:hadoop_data_dir] %>/tmp</value>
+  <!--<value><%= @node[:hadoop][:hadoop_data_dir] %>/hadoop-${user.name}</value> -->
+  <value><%= @node[:hadoop][:hadoop_data_dir] %>/tmp</value>
   <description>A base for other temporary directories.</description>
 </property>
 
 <property>
   <name>fs.default.name</name>
-  <value>hdfs://<%= @node[:poolparty][:current_master] %>:<%= @node[:poolparty][:hadoop_fs_default_port] %></value>
+  <value>hdfs://<%= @node[:hadoop][:current_master] %>:<%= @node[:hadoop][:hadoop_fs_default_port] %></value>
   <description>The name of the default file system.  A URI whose
   scheme and authority determine the FileSystem implementation.  The
   uri's scheme determines the config property (fs.SCHEME.impl) naming

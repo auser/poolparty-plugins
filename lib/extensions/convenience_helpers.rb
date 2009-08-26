@@ -38,8 +38,8 @@ Adds a few handy packages and aliases for developing poolparty instances.
 =end
 
 module PoolParty
-  module Plugin
-    class ConvenienceHelpers < Plugin
+  module Resources
+    class ConvenienceHelpers < Resource
       def before_load(o={}, &block)
         add_packages
         add_aliases
@@ -52,22 +52,23 @@ module PoolParty
         has_package "tree"
         has_package "screen"
 
-        case cloud.os
-        when "centos"
-          has_package "ruby-irb"
-        else
+        #TODO
+        # case cloud.os
+        # when "centos"
+        #   has_package "ruby-irb"
+        # else
           has_package "irb"
           has_package "vim-nox"
-        end
+        # end
       end
 
       def add_aliases
         has_bash_alias :name => "inspect-poolparty-recipes", :value => "vi /var/poolparty/dr_configure/chef/cookbooks/poolparty/recipes/default.rb"
         has_bash_alias :name => "cd-cookbooks", :value => "pushd /var/poolparty/dr_configure/chef/cookbooks/poolparty"
 
-        %w{instance-id local-hostname local-ipv4 public-hostname public-ipv4 security-groups}.each do |metaalias|
-          has_bash_alias :name => metaalias, :value => "curl http://169.254.169.254/latest/meta-data/#{metaalias}"
-        end
+        # %w{instance-id local-hostname local-ipv4 public-hostname public-ipv4 security-groups}.each do |metaalias|
+        #   has_bash_alias :name => metaalias, :value => "curl http://169.254.169.254/latest/meta-data/#{metaalias}"
+        # end
       end
 
       def add_binaries
@@ -77,7 +78,7 @@ module PoolParty
       end
 
       def add_profile_updates
-        has_exec %Q{echo \\"export PS1='\\\\u@\\\\h \\\\A \\\\w (#{cloud_name}) $ '\\" >> /root/.profile}, :not_if => "grep PS1 /root/.profile | grep #{cloud_name}"
+        has_exec %Q{echo \\"export PS1='\\\\u@\\\\h \\\\A \\\\w (#{cloud.name}) $ '\\" >> /root/.profile}, :not_if => "grep PS1 /root/.profile | grep #{cloud.name}"
         # bind '"\e[A":history-search-backward'
         # bind '"\e[B":history-search-forward'
       end

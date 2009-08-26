@@ -3,8 +3,8 @@ In
 =end
 
 module PoolParty
-  module Plugin
-    class Hive < Plugin
+  module Resources
+    class Hive < Resource
       def before_load(o={}, &block)
         do_once do
           # install_from_bin

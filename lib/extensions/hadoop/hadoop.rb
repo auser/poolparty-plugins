@@ -19,8 +19,9 @@ This assumes your clouds are named "hadoop_master" and "hadoop_slave". That suck
 
 
 module PoolParty
-  module Plugin
-    class Hadoop < Plugin
+  module Resources
+    class Hadoop < Resource
+      
       def before_load(o={}, &block)
         do_once do
           install_jdk
@@ -48,7 +49,7 @@ module PoolParty
         has_package(:name => "sun-java6-jdk")
         has_file(:name => "/etc/jvm") do
             mode 0644
-            template "jvm.conf"
+            template File.dirname(__FILE__)+"/templates/jvm.conf"
          end
       end
 
@@ -161,14 +162,17 @@ EOF
 
         # probably need to restart hadoop somewhere here
 
-        has_exec :name => "upgrade-core-hadoop-jar", 
+        has_exec "upgrade-core-hadoop-jar" do
           # :command => "cp /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar /usr/local/src/hadoop/hadoop-0.20.0-core.jar", 
-          :command => "cp -f /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar #{hadoop_install_dir}/hadoop-0.20.0-core.jar", 
-          :action => :nothing
+          command "cp -f /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar #{hadoop_install_dir}/hadoop-0.20.0-core.jar"
+          action :nothing
+        end
 
-        has_exec "export JAVA_HOME=/usr/lib/jvm/java-6-sun && cd /usr/local/src/hadoop && ant jar", 
-          :not_if => "test -e /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar",
-          :calls => get_exec("upgrade-core-hadoop-jar")
+        has_exec "export JAVA_HOME=/usr/lib/jvm/java-6-sun && cd /usr/local/src/hadoop && ant jar" do
+          not_if "test -e /usr/local/src/hadoop/build/hadoop-0.20.1-dev-core.jar"
+          notifies get_exec("upgrade-core-hadoop-jar"), :run
+          action :nothing
+        end
       end
 
       def hadoop_install_dir
@@ -177,8 +181,8 @@ EOF
 
       def set_current_master(master_hostname="master0", port="54310")
         do_once do
-          has_variable :name => "current_master", :value => master_hostname # todo, could eventually be made more dynamic here
-          has_variable :name => "hadoop_fs_default_port", :value => port # todo, could eventually be made more dynamic here
+          has_variable "current_master", master_hostname # todo, could eventually be made more dynamic here
+          has_variable "hadoop_fs_default_port", port # todo, could eventually be made more dynamic here
         end
       end
 
@@ -186,7 +190,7 @@ EOF
         has_gem_package("bjeanes-ghost")
 
         has_file(:name => hadoop_install_dir/"conf/hadoop-env.sh") do
-          mode 0644
+          mode 644
           template "hadoop-env.sh"
         end
 
@@ -206,10 +210,11 @@ EOF
           has_directory hadoop_data_dir/:temp/:mapred/folder, :owner => user, :mode => "755"
         end
 
-        has_variable "hadoop_data_dir",   :value => hadoop_data_dir
-        has_variable "hadoop_mapred_dir", :value => hadoop_data_dir/:mapred
-
-        has_variable("hadoop_this_nodes_ip", :value => lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}})
+        has_variable "hadoop_data_dir",   hadoop_data_dir
+        has_variable "hadoop_mapred_dir", hadoop_data_dir/:mapred
+        
+        has_variable("hadoop_this_nodes_hostname", "<%= instance.dns_name %>")
+        has_variable("hadoop_this_nodes_ip", "<%= instance.public_ip %>")
 
         %w{core hdfs mapred}.each do |config|
           has_file(:name => hadoop_install_dir/"conf/#{config}-site.xml") do
@@ -322,11 +327,11 @@ EOF
        masters_file = ""
        slaves_file  = ""
 
-       master_nodes.each_with_index do |n,i| 
+       clouds['hadoop_master'].nodes.each_with_index do |n,i| 
          masters_file << "master#{i}\n"
        end 
 
-       slave_nodes.each_with_index do |n, i|
+       clouds['hadoop_slave'].each_with_index do |n, i|
          slaves_file << "slave#{i}\n"
        end
 
@@ -353,7 +358,7 @@ EOF
 
       private
       def cloud_keys_dir
-        File.dirname(pool_specfile)/:keys
+        "#{Dir.pwd}"/:keys
       end
 
       def hadoop_id_rsa
@@ -394,15 +399,15 @@ EOF
       end
 
       def master_nodes
-        clouds[:hadoop_master].andand.nodes(:status => 'running') || []
+        clouds['hadoop_master'].nodes(:status => 'running') || []
       end
 
       def slave_nodes
-        clouds[:hadoop_slave].andand.nodes(:status => 'running') || []
+        clouds['hadoop_slave'].nodes(:status => 'running') || []
       end
 
       def tasktracker_nodes
-        clouds[:hadoop_tasktracker].andand.nodes(:status => 'running') || []
+        clouds['hadoop_tasktracker'].nodes(:status => 'running') || []
       end
 
       def node_types

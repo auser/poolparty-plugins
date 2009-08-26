@@ -2,8 +2,8 @@
   Adds a bash alias
 =end
 module PoolParty
-  module Plugin
-    class BashAlias < Plugin
+  module Resources
+    class BashAlias < Resource
       dsl_methods :name,  # the name of the cmd
                   :value, # the value of the alias
                   :user 

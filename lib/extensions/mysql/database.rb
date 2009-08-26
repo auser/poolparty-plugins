@@ -8,8 +8,8 @@ Needs some work on determining if these commands need to be run. Ignoring failur
 =end
 
 module PoolParty
-  module Plugin
-    class Database < Plugin
+  module Resources
+    class Database < Resource
 
     def loaded(o={}, &block)
       # do_once do

@@ -25,7 +25,7 @@ Ping/DROP	net		$FW
 ACCEPT		$FW		net		icmp
 
 # PoolParty configured rules
-<%= @node[:poolparty][:shorewall_rules] %>
+<%= @node[:shorewall][:shorewall_rules] %>
 
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 # vim: ft=shorewall
