@@ -191,7 +191,7 @@ EOF
         end
 
 
-        has_variable "block_replication_level", :value => 5 # this isn't the number of nodes, this is the block replication level
+        has_variable "block_replication_level", :value => 3 # this isn't the number of nodes, this is the block replication level
         # this should be able to be configured in the hadoop config
 
         has_directory hadoop_data_dir, :owner => user, :mode => "755"
