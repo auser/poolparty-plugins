@@ -58,7 +58,7 @@ module PoolParty
         has_package :name => "python-dev"
 
         has_group "ganglia", :action => :create
-        has_user "ganglia", :gid => "ganglia"
+        has_user "ganglia", :gid => "ganglia", :requires => get_group("ganglia")
  
         # libart-2.0-2 ?
       end
@@ -76,6 +76,7 @@ module PoolParty
         has_exec "mv /usr/local/src/ganglia-3.1.2/web /var/www/ganglia",
           :not_if => "test -e /var/www/ganglia"
         has_file :name => "/var/www/ganglia/conf.php", :mode => "0644", :template => "ganglia-web-conf.php.erb"
+        has_master_cloud cloud.name # our master is ourself
         has_variable "ganglia_gmond_is_master", true
         gmond
         gmetad
@@ -170,11 +171,11 @@ module PoolParty
       def gmond_after_all_loaded
         has_variable "ganglia_cloud_name", cloud.name
         has_variable "ganglia_this_nodes_private_ip", lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}}
-        has_variable "ganglia_masters_ip", lambda { %Q{\`ping -c1  master0 | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
+
+        master_cloud_node = clouds[@master_cloud_name].nodes(:status => 'running').first
+        has_variable "ganglia_masters_ip", lambda { %Q{\`ping -c1 #{master_cloud_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
         first_node = clouds[cloud.name].nodes(:status => 'running').first
-
-
         if first_node
           has_variable "ganglia_first_node_in_clusters_ip", lambda { %Q{\`ping -c1  #{first_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
@@ -220,8 +221,34 @@ module PoolParty
         end
       end
 
+      def has_master_cloud(cloud_name)
+        @master_cloud_name = cloud_name.to_s
+      end
+
       # todo, add a verifier
       # telnet localhost 8649
+
+      # a bit of a hack, only use if needed, eventually should read if needed
+      def install_jaunty_sources
+        has_exec("apt-get update", :action => :nothing)
+
+        lines =<<-EOF
+deb http://archive.ubuntu.com/ubuntu/ jaunty main restricted
+deb http://archive.ubuntu.com/ubuntu/ jaunty universe
+deb http://archive.ubuntu.com/ubuntu/ jaunty multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ jaunty main restricted
+deb-src http://archive.ubuntu.com/ubuntu/ jaunty universe
+deb-src http://archive.ubuntu.com/ubuntu/ jaunty multiverse
+EOF
+        lines.each_line do |l|
+           has_line_in_file do 
+             file "/etc/apt/sources.list"
+             line l 
+             notifies get_exec("apt-get update"), :run
+           end
+        end
+      end
+
 
     end
   end
