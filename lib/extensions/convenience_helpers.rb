@@ -63,8 +63,8 @@ module PoolParty
       end
 
       def add_aliases
-        has_bash_alias :name => "inspect-poolparty-recipes", :value => "vi /var/poolparty/dr_configure/chef/cookbooks/poolparty/recipes/default.rb"
-        has_bash_alias :name => "cd-cookbooks", :value => "pushd /var/poolparty/dr_configure/chef/cookbooks/poolparty"
+        has_bash_alias :name => "inspect-poolparty-recipes", :value => "vi /etc/chef/cookbooks/poolparty/recipes/default.rb"
+        has_bash_alias :name => "cd-cookbooks", :value => "pushd /etc/chef/cookbooks/poolparty"
 
         # %w{instance-id local-hostname local-ipv4 public-hostname public-ipv4 security-groups}.each do |metaalias|
         #   has_bash_alias :name => metaalias, :value => "curl http://169.254.169.254/latest/meta-data/#{metaalias}"
