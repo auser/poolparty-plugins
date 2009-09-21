@@ -60,7 +60,7 @@ module PoolParty
 
       def configure
         has_exec :name => "reload_shorewall_config", :command => "/sbin/shorewall try /etc/shorewall", :action => :nothing
-        has_variable "shorewall_rules", :value => (@rules.join("\n") || "#")
+        has_variable "shorewall_rules", (@rules.join("\n") || "#")
         %w{interfaces policy rules zones shorewall.conf}.each do |cfg| # todo, load anything relative to the clouds.rb
           has_file "/etc/shorewall/#{cfg}" do
             mode "0644"
