@@ -7,9 +7,10 @@ arr = []
     templates_dir = File.expand_path(File.join(File.dirname(lib), "templates"))
     if File.exists?(templates_dir)
       arr << templates_dir
-      # p PoolParty::Resources::FileResource.searchable_paths
     end
     require lib if ::File.stat(lib).file?
   end
 end
 PoolParty::Resources::FileResource.has_searchable_paths :prepend_paths=> arr
+PoolParty::Resources::FileResource.searchable_paths
+# p PoolParty::Resources::FileResource.searchable_paths
