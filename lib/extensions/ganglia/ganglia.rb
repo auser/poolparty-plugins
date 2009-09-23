@@ -49,10 +49,11 @@ module PoolParty
       end
 
       def install_dependencies
+        self.install_jaunty_sources
         has_package :name => "rrdtool"
         has_package :name => "build-essential"
-        has_package :name => "librrd-dev" 
-        has_package :name => "libapr1-dev"
+        has_package :name => "librrd-dev", :requires => get_exec("line in /etc/apt/sources.list")   
+        has_package :name => "libapr1-dev" # +  
         has_package :name => "libconfuse-dev"
         has_package :name => "libexpat1-dev"
         has_package :name => "python-dev"
@@ -64,18 +65,28 @@ module PoolParty
       end
 
       def download
-        has_exec "wget http://superb-west.dl.sourceforge.net/sourceforge/ganglia/ganglia-3.1.2.tar.gz -O /usr/local/src/ganglia-3.1.2.tar.gz",
+        has_exec :name => "wget-ganglia",
+          :command => "wget http://superb-west.dl.sourceforge.net/sourceforge/ganglia/ganglia-3.1.2.tar.gz -O /usr/local/src/ganglia-3.1.2.tar.gz",
           :not_if => "test -e /usr/local/src/ganglia-3.1.2.tar.gz"
-        has_exec "cd /usr/local/src && tar -xvvf /usr/local/src/ganglia-3.1.2.tar.gz",
-          :not_if => "test -e /usr/local/src/ganglia-3.1.2"
+        has_exec :name => "untar ganglia",
+          :command => "cd /usr/local/src && tar -xvvf /usr/local/src/ganglia-3.1.2.tar.gz",
+          :not_if => "test -e /usr/local/src/ganglia-3.1.2",
+          :requires => get_exec("wget-ganglia")
       end
 
       def master
-        has_exec "cd /usr/local/src/ganglia-3.1.2 && ./configure --with-gmetad && make && make install",
-          :not_if => "test -e /usr/lib/ganglia"
-        has_exec "mv /usr/local/src/ganglia-3.1.2/web /var/www/ganglia",
-          :not_if => "test -e /var/www/ganglia"
-        has_file :name => "/var/www/ganglia/conf.php", :mode => "0644", :template => "ganglia-web-conf.php.erb"
+        has_exec :name => "compile-ganglia",
+          :command => "cd /usr/local/src/ganglia-3.1.2 && ./configure --with-gmetad && make && make install",
+          :not_if => "test -e /usr/lib/ganglia",
+          :requires => get_exec("untar ganglia")
+        has_exec :name => "mv-install-ganglia",
+          :command => "mv /usr/local/src/ganglia-3.1.2/web /var/www/ganglia",
+          :not_if => "test -e /var/www/ganglia",
+          :requires => get_exec("compile-ganglia")
+        has_file :name => "/var/www/ganglia/conf.php", 
+          :mode => "0644", 
+          :template => "ganglia-web-conf.php.erb",
+          :requires => get_exec("mv-install-ganglia")
         has_master_cloud cloud.name # our master is ourself
         has_variable "ganglia_gmond_is_master", true
         gmond
@@ -87,7 +98,7 @@ module PoolParty
 
       def slave
         has_exec "cd /usr/local/src/ganglia-3.1.2 && ./configure && make && make install",
-          :not_if => "test -e /usr/lib/ganglia"
+          :not_if => "test -e /usr/lib/ganglia", :requires => get_exec("untar ganglia")
         has_variable "ganglia_gmond_is_master", false
         gmond
         # 
@@ -102,6 +113,7 @@ module PoolParty
           mode 0755
           template :bin/"gmond.erb"
           notifies get_exec("restart-gmond"), :run
+          requires get_exec("restart-gmond")
         end
 
         install_extra_gmond_monitors
@@ -109,13 +121,14 @@ module PoolParty
 
       def gmetad
         has_directory "/var/lib/ganglia/rrds"
-        has_exec "chmod 755 /var/lib/ganglia/rrds"
-        has_exec "chown -R ganglia:ganglia /var/lib/ganglia/rrds"
+        has_exec "chmod 755 /var/lib/ganglia/rrds", :requires => get_directory("/var/lib/ganglia/rrds")
+        has_exec "chown -R ganglia:ganglia /var/lib/ganglia/rrds", :requires => [get_directory("/var/lib/ganglia/rrds"), get_user("ganglia")]
         has_exec({:name => "restart-gmetad", :command => "/etc/init.d/gmetad restart", :action => :nothing})
         has_file(:name => "/etc/init.d/gmetad") do
           mode 0755
           template :bin/"gmetad.erb"
           notifies get_exec("restart-gmetad"), :run
+          requires get_exec("restart-gmetad")
         end
       end
 
@@ -141,7 +154,11 @@ module PoolParty
           ips = []
           if clouds[cloud.name]
             clouds[cloud.name].nodes(:status => 'running').each_with_index do |n, i|
-              ips << (n[:private_dns_name] || n[:ip]) + ":8649" # todo - what if we used master0, slave0 etc here?
+              unless (ip = (n[:private_dns_name] || n[:ip]))
+                puts "WARNING: #{cloud.name} node #{i} has no ip or private dns name. Ganglia not configured"
+                next
+              end
+              ips << ip + ":8649" # todo - what if we used master0, slave0 etc here?
             end
           end
           data_sources << (line + ips.join(" ") + "\n")
@@ -159,8 +176,9 @@ module PoolParty
           mode 644
           template "gmetad.conf.erb"
           notifies get_exec("restart_gmetad2"), :run
+          requires get_exec("restart_gmetad2")
         end
-        has_service "gmetad", :enabled => true, :running => true, :supports => [:restart]
+        has_service "gmetad", :enabled => true, :running => true, :supports => [:restart], :requires => [get_file("/etc/init.d/gmond"), get_exec("compile-ganglia"), get_file("/etc/init.d/gmetad")]
       end
 
       def track(*features)
@@ -170,14 +188,15 @@ module PoolParty
 
       def gmond_after_all_loaded
         has_variable "ganglia_cloud_name", cloud.name
-        has_variable "ganglia_this_nodes_private_ip", lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}}
+        # has_variable "ganglia_this_nodes_private_ip", lambda{ %Q{%x[curl http://169.254.169.254/latest/meta-data/local-ipv4]}}
+        has_variable "ganglia_this_nodes_private_ip", lambda{ %Q{ipaddress}}
 
         master_cloud_node = clouds[@master_cloud_name].nodes(:status => 'running').first
-        has_variable "ganglia_masters_ip", lambda { %Q{\`ping -c1 #{master_cloud_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
+        has_variable "ganglia_masters_ip", lambda { %Q{\`ping -c1 #{master_cloud_node[:private_dns_name] || master_cloud_node[:internal_ip] || master_cloud_node[:public_ip]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
         first_node = clouds[cloud.name].nodes(:status => 'running').first
         if first_node
-          has_variable "ganglia_first_node_in_clusters_ip", lambda { %Q{\`ping -c1  #{first_node[:private_dns_name]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
+          has_variable "ganglia_first_node_in_clusters_ip", lambda { %Q{\`ping -c1  #{first_node[:private_dns_name] || first_node[:internal_ip] || first_node[:public_ip]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
 
           has_file(:name => "/etc/ganglia/gmond.conf") do
             mode 0644
@@ -188,7 +207,7 @@ module PoolParty
           enable_tracking_configs
 
         end
-        has_service "gmond", :enabled => true, :running => true, :supports => [:restart]
+        has_service "gmond", :enabled => true, :running => true, :supports => [:restart], :requires => get_file("/etc/init.d/gmond")
 
       end
 
@@ -244,8 +263,15 @@ EOF
            has_line_in_file do 
              file "/etc/apt/sources.list"
              line l 
-             notifies get_exec("apt-get update"), :run
+             notifies get_exec("apt-get update"), :run, :delayed
+             requires get_exec("apt-get update")
            end
+        end
+
+        has_exec do
+          name "echo_hi_after_jaunty_sources" 
+          command "echo hi"
+          notifies get_exec("apt-get update"), :run, :immediately
         end
       end
 
