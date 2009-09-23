@@ -16,7 +16,7 @@ This assumes your clouds are named "hadoop_master" and "hadoop_slave". That suck
 == References
 =end
 
-
+PoolParty::Resources::FileResource.searchable_paths << File.dirname(__FILE__)+'/templates/'
 
 module PoolParty
   module Resources

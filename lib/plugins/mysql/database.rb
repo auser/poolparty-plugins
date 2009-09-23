@@ -6,6 +6,7 @@
 Needs some work on determining if these commands need to be run. Ignoring failures for now.
 == References
 =end
+PoolParty::Resources::FileResource.searchable_paths << File.dirname(__FILE__)+'/templates/'
 
 module PoolParty
   module Resources

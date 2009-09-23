@@ -27,6 +27,7 @@ then rm it when done. This may cause problems when nodes provision each other.
 * http://www.linuxhelp.net/guides/tripwire/
 =end
 
+PoolParty::Resources::FileResource.searchable_paths << File.dirname(__FILE__)+'/templates/'
 
 module PoolParty
   module Resources

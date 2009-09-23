@@ -37,6 +37,8 @@ ec2-authorize -P tcp -p 8649 nmurray-hadoop
 * http://www.cultofgary.com/2008/10/16/ec2-and-ganglia/
 =end
 
+PoolParty::Resources::FileResource.searchable_paths << File.dirname(__FILE__)+'/templates/'
+
 module PoolParty
   module Resources
     class Ganglia < Resource
