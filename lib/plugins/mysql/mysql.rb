@@ -5,6 +5,7 @@
 == Motivation
 == References
 =end
+PoolParty::Resources::FileResource.searchable_paths << File.dirname(__FILE__)+'/templates/'
 
 module PoolParty
   module Resources

@@ -36,6 +36,7 @@ You may ask, "Why do we need a firewall when EC2 already provides one?" The answ
 * http://www.shorewall.net/standalone.htm
 =end
 
+PoolParty::Resources::FileResource.searchable_paths << File.dirname(__FILE__)+'/templates/'
 
 module PoolParty
   module Resources
