@@ -135,11 +135,14 @@ module PoolParty
       end
 
       def monitor(*cloud_names)
-        monitored_clouds << cloud_names
+        @monitored_clouds ||= {}
+        cloud_names.each do |name|
+          @monitored_clouds[name] = true
+        end
       end
       
       def monitored_clouds
-        @monitored_clouds ||= []
+        @monitored_clouds ? @monitored_clouds.keys : []
       end
 
       def perform_after_all_loaded_for_slave
@@ -147,17 +150,17 @@ module PoolParty
       end
 
       def perform_after_all_loaded_for_master
-        raise "No clouds to monitor with ganglia specified. Please use the 'monitor(*cloud_names)' directive within your ganglia block" unless @monitored_clouds
+        raise "No clouds to monitor with ganglia specified. Please use the 'monitor(*cloud_names)' directive within your ganglia block" unless self.monitored_clouds
         gmond_after_all_loaded
 
         data_sources = ""
-        @monitored_clouds.each do |cloud_name|
+        self.monitored_clouds.each do |cloud_name|
           line = "data_source \\\"#{cloud_name}\\\" "
           ips = []
-          if clouds[cloud.name]
-            clouds[cloud.name].nodes(:status => 'running').each_with_index do |n, i|
+          if clouds[cloud_name]
+            clouds[cloud_name].nodes(:status => 'running').each_with_index do |n, i|
               unless (ip = (n[:private_dns_name] || n[:ip]))
-                puts "WARNING: #{cloud.name} node #{i} has no ip or private dns name. Ganglia not configured"
+                puts "WARNING: #{cloud_name} node #{i} has no ip or private dns name. Ganglia not configured"
                 next
               end
               ips << ip + ":8649" # todo - what if we used master0, slave0 etc here?
@@ -265,7 +268,7 @@ EOF
            has_line_in_file do 
              file "/etc/apt/sources.list"
              line l 
-             notifies get_exec("apt-get update"), :run, :delayed
+             notifies get_exec("apt-get update"), :run, :immediately # slow, but only runs the first time
              requires get_exec("apt-get update")
            end
         end

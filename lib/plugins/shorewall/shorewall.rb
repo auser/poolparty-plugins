@@ -10,6 +10,7 @@ Install and configure Shorewall Firewall
     rule "SSH/ACCEPT net $FW"
     rule "ACCEPT net:10.0.0.0/8 $FW"    # allow local EC2 traffic OR
     rule "ACCEPT net:192.168.0.0/8 $FW" # allow local class C traffic
+    # ACCEPT          net       $FW           tcp     25,9999
   end
 
 ** NOTE! You need to enable SSH or you'll be locked out of your instance! **
