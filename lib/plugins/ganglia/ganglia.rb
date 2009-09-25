@@ -197,7 +197,10 @@ module PoolParty
         has_variable "ganglia_this_nodes_private_ip", lambda{ %Q{ipaddress}}
 
         master_cloud_node = clouds[@master_cloud_name].nodes(:status => 'running').first
-        has_variable "ganglia_masters_ip", lambda { %Q{\`ping -c1 #{master_cloud_node[:private_dns_name] || master_cloud_node[:internal_ip] || master_cloud_node[:public_ip]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
+
+        if master_cloud_node
+          has_variable "ganglia_masters_ip", lambda { %Q{\`ping -c1 #{master_cloud_node[:private_dns_name] || master_cloud_node[:internal_ip] || master_cloud_node[:public_ip]} | grep PING | awk -F '[()]' '{print $2 }'\`.strip}}
+        end
 
         first_node = clouds[cloud.name].nodes(:status => 'running').first
         if first_node
